@@ -15,12 +15,19 @@ Proyecto personal de investigación aplicada en sensado RF, dentro de mi portfol
 5. [Hardware](#hardware)
 6. [Metodología](#metodología)
 7. [Roadmap y fases](#roadmap-y-fases)
+<<<<<<< HEAD
 8. [Cómo empezar](#cómo-empezar-para-retomar-el-proyecto)
 9. [Estructura del repositorio](#estructura-del-repositorio)
 10. [Limitaciones y consideraciones honestas](#limitaciones-y-consideraciones-honestas)
 11. [Referencias y trabajo relacionado (enlaces)](#referencias-y-trabajo-relacionado-enlaces)
 12. [Contacto](#contacto)
 13. [Licencia](#licencia)
+=======
+8. [Estructura del repositorio](#estructura-del-repositorio)
+9. [Limitaciones y consideraciones honestas](#limitaciones-y-consideraciones-honestas)
+10. [Referencias y trabajo relacionado (enlaces)](#referencias-y-trabajo-relacionado-enlaces)
+11. [Licencia](#licencia)
+>>>>>>> c6589bd (Diseno inicial: README completo con diferenciacion, arquitectura, metodologia y roadmap)
 
 ---
 
@@ -54,6 +61,7 @@ Antes de empezar se hizo una revisión del ecosistema existente para evitar rein
 
 ```mermaid
 flowchart LR
+<<<<<<< HEAD
     subgraph M1["Modo A: router existente (mínimo hardware)"]
         R1["Router WiFi existente"]
         A1["ESP32 único<br/>Modo estación<br/>Hace ping al router"]
@@ -78,6 +86,19 @@ flowchart LR
 Los dos recuadros de arriba son **configuraciones alternativas**, no partes simultáneas del mismo sistema — se implementa primero el Modo B (control total sobre el tráfico, más fácil de depurar) y se documentará si el Modo A resulta viable como alternativa de menor coste de hardware.
 
 Detalle de cada modo (se documentará cuál rinde mejor en la práctica):
+=======
+    R[Router WiFi<br/>ya existente] -.señal 2.4GHz.-> A[ESP32 #1<br/>modo AP o STA]
+    R -.señal 2.4GHz.-> B[ESP32 #2<br/>sniffer CSI]
+    B -->|CSI crudo<br/>serie/UDP| C[Pipeline Python<br/>analysis/]
+    C --> D[Extracción de<br/>características]
+    D --> E[Detector estadístico<br/>baseline]
+    D --> F[Clasificador ligero<br/>ML, fase 2]
+    E --> G[Evaluación cuantitativa<br/>precision/recall/latencia]
+    F --> G
+```
+
+Dos configuraciones posibles a evaluar (se documentará cuál rinde mejor en la práctica):
+>>>>>>> c6589bd (Diseno inicial: README completo con diferenciacion, arquitectura, metodologia y roadmap)
 
 - **Modo "router existente"**: un solo ESP32 en modo estación, haciendo ping al router y capturando el CSI de las respuestas — mínimo hardware, pero depende de la configuración del router.
 - **Modo "dos ESP32"**: un ESP32 como AP dedicado + otro como estación, control total sobre el tráfico y el timing — más robusto para experimentación, y es el que ya encaja con el hardware que tengo disponible (2+ ESP32-WROOM).
@@ -121,6 +142,7 @@ Comparar el baseline contra un clasificador simple (SVM lineal o kNN sobre las c
 - Latencia de detección (tiempo desde que ocurre el evento hasta que se clasifica)
 - Degradación de accuracy vs. distancia y vs. tipo de pared — este es el resultado más parecido en espíritu al resto del portfolio (caracterización RF con datos, no solo "funciona/no funciona")
 
+<<<<<<< HEAD
 ### Métricas objetivo (punto de partida, no una promesa)
 
 Para tener un criterio de éxito concreto en vez de solo "que funcione", estos son los objetivos iniciales de la Fase 3-4. Son estimaciones razonables basadas en lo reportado por proyectos similares (ver tabla de diferenciación), **no resultados garantizados** — la primera tarea real de la Fase 3 es comprobar si son alcanzables con mi entorno y hardware concretos, y corregir estos números con datos reales en cuanto existan:
@@ -132,6 +154,8 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 | Latencia de detección | <2s | Fase 3 |
 | Recall a través de pared de tabique | Desconocido — es una pregunta de investigación de la Fase 5, no una asunción | Fase 5 |
 
+=======
+>>>>>>> c6589bd (Diseno inicial: README completo con diferenciacion, arquitectura, metodologia y roadmap)
 ## Roadmap y fases
 
 - [ ] **Fase 1 — Prueba de concepto de adquisición**: flashear `esp-csi` en un ESP32, confirmar que se puede capturar y guardar CSI crudo en ambas configuraciones (router existente / dos ESP32)
@@ -141,6 +165,7 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 - [ ] **Fase 5 — Caracterización sistemática**: barrido de distancia/pared/nº de personas, gráficas de degradación de accuracy
 - [ ] **Fase 6 (opcional)** — Dashboard en tiempo real y/o integración con Home Assistant, una vez validado el pipeline
 
+<<<<<<< HEAD
 ## Cómo empezar (para retomar el proyecto)
 
 1. Flashear el firmware base de `esp-csi` en un ESP32 (Fase 1) — de momento no hay firmware propio en `firmware/`, se parte del ejemplo oficial de Espressif y se adapta según haga falta.
@@ -148,6 +173,8 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 3. Escribir el primer script de `analysis/` que simplemente cargue esas muestras y grafique amplitud por subportadora en el tiempo — antes de cualquier detector, hay que *ver* la señal primero.
 4. A partir de ahí, seguir el roadmap de fases en orden; no saltar a clasificadores (Fase 4) sin tener el baseline (Fase 3) evaluado, o no habrá con qué comparar si el modelo complejo realmente aporta algo.
 
+=======
+>>>>>>> c6589bd (Diseno inicial: README completo con diferenciacion, arquitectura, metodologia y roadmap)
 ## Estructura del repositorio
 
 ```
@@ -177,12 +204,15 @@ wifi-csi-presence-sensing/
 - [Wi-ESP / Wi-SafeHome y colección de papers relacionados](https://wrlab.github.io/Wi-ESP/) (grupo de investigación, revisión de literatura de CSI sensing)
 - ruvnet — [RuView / WiFi DensePose](https://github.com/ruvnet/RuView) (sistema avanzado de pose estimation vía CSI, referencia de hasta dónde puede llegar la técnica)
 
+<<<<<<< HEAD
 ## Contacto
 
 - LinkedIn: 
 - Email: alvarogj1@correo.ugr.es
 - Repositorio principal del portfolio: [Telecom-portfolio](https://github.com/AlvGJ-UGR/Telecom-portfolio)
 
+=======
+>>>>>>> c6589bd (Diseno inicial: README completo con diferenciacion, arquitectura, metodologia y roadmap)
 ## Licencia
 
 MIT — ver [`LICENSE`](LICENSE).
