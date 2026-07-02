@@ -173,8 +173,8 @@ wifi-csi-presence-sensing/
 
 ## Contacto
 
-- LinkedIn: [tu perfil aquí]
-- Email: [tu-email@ejemplo.com]
+- LinkedIn: 
+- Email: alvarogj1@correo.ugr.es
 - Repositorio principal del portfolio: [Telecom-portfolio](https://github.com/AlvGJ-UGR/Telecom-portfolio)
 
 ## Licencia
