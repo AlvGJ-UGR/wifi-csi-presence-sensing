@@ -55,17 +55,23 @@ Antes de empezar se hizo una revisión del ecosistema existente para evitar rein
 ```mermaid
 flowchart LR
     subgraph M1["Modo A: router existente (mínimo hardware)"]
-        R1[Router WiFi<br/>ya existente] -.señal 2.4GHz.-> A1[ESP32 único<br/>modo estación, hace ping al router]
+        R1["Router WiFi existente"]
+        A1["ESP32 único<br/>Modo estación<br/>Hace ping al router"]
+        R1 -.->|señal 2.4 GHz| A1
     end
-    subgraph M2["Modo B: dos ESP32 dedicados (más control, el elegido para empezar)"]
-        A2[ESP32 AP<br/>dedicado] -.señal 2.4GHz.-> B2[ESP32 STA<br/>sniffer CSI]
+
+    subgraph M2["Modo B: dos ESP32 dedicados (más control, elegido para empezar)"]
+        A2["ESP32 AP<br/>dedicado"]
+        B2["ESP32 STA<br/>Sniffer CSI"]
+        A2 -.->|señal 2.4 GHz| B2
     end
-    A1 --> C[Pipeline Python<br/>analysis/]
+
+    A1 --> C["Pipeline Python<br/>analysis/"]
     B2 --> C
-    C --> D[Extracción de<br/>características]
-    D --> E[Detector estadístico<br/>baseline]
-    D --> F[Clasificador ligero<br/>ML, fase 2]
-    E --> G[Evaluación cuantitativa<br/>precision/recall/latencia]
+    C --> D["Extracción de<br/>características"]
+    D --> E["Detector estadístico<br/>baseline"]
+    D --> F["Clasificador ligero<br/>ML (fase 2)"]
+    E --> G["Evaluación cuantitativa<br/>precision/recall/latencia"]
     F --> G
 ```
 
