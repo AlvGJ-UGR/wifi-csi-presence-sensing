@@ -7,21 +7,21 @@
 
 Last Updated
 
-YYYY-MM-DD
+2026-07-02
 
 ---
 
 # Current Phase
 
-Phase 0 — Repository Preparation
+Phase 1 — CSI Acquisition
 
 Status:
 
-🟢 Completed
+🟡 In progress — infrastructure and documentation ready, hardware capture not yet performed.
 
 Next Phase:
 
-Phase 1 — CSI Acquisition
+Phase 2 — Signal Characterisation (blocked until raw sessions exist).
 
 ---
 
@@ -29,7 +29,7 @@ Phase 1 — CSI Acquisition
 
 Validate reliable CSI acquisition using Espressif's official esp-csi firmware on ESP32 hardware.
 
-The objective of the next work sessions is NOT to process the data.
+The objective of the next work session is NOT to process the data.
 
 Only to demonstrate stable acquisition and create the first reproducible raw dataset.
 
@@ -39,7 +39,7 @@ Only to demonstrate stable acquisition and create the first reproducible raw dat
 
 Repository structure completed.
 
-README completed.
+README completed — merge conflicts from prior branches resolved (README.md and LICENSE had unresolved Git conflict markers; both now clean).
 
 Project architecture defined.
 
@@ -47,11 +47,15 @@ Research methodology defined.
 
 Hardware available.
 
+Firmware flashing guide written (`firmware/README.md`) — describes cloning `esp-csi`, the Modo A / Modo B setup steps, and Phase 1 exit criteria. No custom firmware code exists yet; none is expected until `esp-csi` proves insufficient.
+
+Raw session format and acquisition protocol formally defined (`docs/acquisition_protocol.md`) — session naming convention, required `metadata.json` fields, raw CSV format, labelling discipline, immutability rule.
+
 No firmware modifications have been made yet.
 
-No datasets have been collected.
+No datasets have been collected yet — this requires physical hardware in hand, which is outside what an AI session can perform. The documentation is now ready for that session.
 
-No Python analysis scripts exist yet.
+No Python analysis scripts exist yet — intentionally deferred (see ADR-003, ADR-005; nothing to analyse before raw data exists).
 
 No experiments have been executed.
 
@@ -59,21 +63,13 @@ No experiments have been executed.
 
 # Next Task
 
-Flash Espressif's official esp-csi firmware.
+Physical, hands-on task (requires the user at the bench with the ESP32 boards):
 
-Verify:
-
-- Successful firmware flashing.
-- Stable CSI packet acquisition.
-- Continuous serial output.
-- Packet integrity.
-- Capture at least one raw recording session.
-
-Store the resulting dataset under:
-
-data/raw/
-
-Document the hardware configuration used.
+1. Clone `espressif/esp-csi`, flash Modo B (two dedicated ESP32s: AP + STA/sniffer) following `firmware/README.md`.
+2. Confirm CSI frames appear over serial with `idf.py monitor`, no corruption, roughly stable packet rate.
+3. Capture at least one raw session per label class (`ausente`, `presente_estatico`, `presente_movimiento`) at Modo B, following the format in `docs/acquisition_protocol.md`.
+4. Store the resulting files under `data/raw/<session_id>/` (csi_raw.csv + metadata.json).
+5. Optionally repeat for Modo A (existing router) once Modo B is confirmed stable.
 
 ---
 
@@ -81,7 +77,7 @@ Document the hardware configuration used.
 
 Priority 1
 
-Reliable CSI acquisition.
+Reliable CSI acquisition (hardware-dependent, next physical session).
 
 Priority 2
 
@@ -89,7 +85,7 @@ Raw dataset generation.
 
 Priority 3
 
-Initial signal visualisation.
+Initial signal visualisation (first `analysis/` script — just load + plot, no detection logic yet).
 
 Nothing else should be implemented before these tasks are complete.
 
@@ -101,7 +97,7 @@ Current architecture uses:
 
 • Espressif esp-csi as acquisition framework.
 
-• Two ESP32 devices as the primary experimental configuration.
+• Two ESP32 devices (Modo B) as the primary experimental configuration; Modo A (existing router) as secondary/optional.
 
 • Python for all offline signal processing.
 
@@ -111,7 +107,7 @@ Refer to DECISIONS.md before modifying any architectural choice.
 
 # Known Risks
 
-Possible router incompatibilities.
+Possible router incompatibilities (Modo A specifically — untested, flagged as an open question in `firmware/README.md`).
 
 ESP32 firmware limitations.
 
@@ -141,19 +137,19 @@ No additional hardware required.
 
 # Pending Deliverables
 
-□ Raw CSI acquisition
+☑ Firmware flashing guide (documentation only — code pending physical session)
 
-□ Dataset format
+☑ Raw dataset format specification
+
+□ Raw CSI acquisition (actual capture — requires hardware session)
 
 □ Initial signal plots
-
-□ Acquisition documentation
 
 ---
 
 # Blockers
 
-None.
+Raw CSI acquisition itself requires physical access to the ESP32 hardware and cannot be completed in a documentation-only session. Everything needed to perform that session (guide + format spec) is now in place.
 
 ---
 
