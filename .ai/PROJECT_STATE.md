@@ -7,7 +7,7 @@
 
 Last Updated
 
-2026-07-02
+2026-07-02 (session 3)
 
 ---
 
@@ -17,7 +17,7 @@ Phase 1 — CSI Acquisition
 
 Status:
 
-🟡 In progress — infrastructure and documentation ready, hardware capture not yet performed.
+🟡 In progress — all documentation-only work for this phase is now complete. Every remaining Phase 1 task requires physical access to the ESP32 hardware.
 
 Next Phase:
 
@@ -50,6 +50,8 @@ Hardware available.
 Firmware flashing guide written (`firmware/README.md`) — describes cloning `esp-csi`, the Modo A / Modo B setup steps, and Phase 1 exit criteria. No custom firmware code exists yet; none is expected until `esp-csi` proves insufficient.
 
 Raw session format and acquisition protocol formally defined (`docs/acquisition_protocol.md`) — session naming convention, required `metadata.json` fields, raw CSV format, labelling discipline, immutability rule.
+
+Hardware configuration template and pre-flight checklist written (`docs/hardware_configuration.md`) — board/router fields left as explicit `TBD` pending the physical session (not guessed, per ADR-008); checklist sequences the flash → associate → verify-CSI-stream → test-capture steps before any labelled session is recorded.
 
 No firmware modifications have been made yet.
 
@@ -141,6 +143,8 @@ No additional hardware required.
 
 ☑ Raw dataset format specification
 
+☑ Hardware configuration template + pre-flight checklist
+
 □ Raw CSI acquisition (actual capture — requires hardware session)
 
 □ Initial signal plots
@@ -149,7 +153,7 @@ No additional hardware required.
 
 # Blockers
 
-Raw CSI acquisition itself requires physical access to the ESP32 hardware and cannot be completed in a documentation-only session. Everything needed to perform that session (guide + format spec) is now in place.
+Raw CSI acquisition itself requires physical access to the ESP32 hardware and cannot be completed in a documentation-only session. All Phase 1 documentation deliverables (flashing guide, session format spec, hardware config template, pre-flight checklist) are now complete — there is no further engineering work that can be done without physical hardware in hand. The next session must be a hands-on capture session.
 
 ---
 
