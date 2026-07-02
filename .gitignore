@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ESP-IDF
+build/
+sdkconfig
+sdkconfig.old
+
+# Datos grandes/temporales
+data/raw/*.csv
+!data/raw/.gitkeep
+*.npz
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
