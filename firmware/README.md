@@ -47,8 +47,15 @@ processing. Phase 1 is acquisition-only (see ADR-002, ADR-003).
    - Generate periodic traffic (ICMP ping to the router, or a lightweight
      UDP echo) so CSI is refreshed at a known rate.
 5. **Capture to raw sessions.** Do not process anything at this stage.
-   Redirect the serial CSI output into a file per the session format defined
-   in `docs/acquisition_protocol.md`, and store it under `data/raw/`.
+   Use `tools/capture_session.py` (see `tools/README.md`) to stream the
+   serial CSI output straight into a correctly named session folder under
+   `data/raw/`, with `metadata.json` generated automatically from the
+   flags you pass in. This replaces manually redirecting `idf.py monitor`
+   output and hand-writing metadata — same result, less room for a
+   mislabelled or malformed session. Run `tools/validate_session.py` on
+   each resulting folder immediately afterwards to catch structural
+   problems (missing consent field, empty CSV, malformed JSON) before
+   moving to the next capture.
 
 ## What "done" looks like for Phase 1
 
