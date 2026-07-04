@@ -1,0 +1,7 @@
+# Host-side tooling dependencies (tools/)
+pyserial>=3.5
+
+# Analysis dependencies are intentionally NOT listed yet -- analysis/ does
+# not exist until real raw data has been captured and validated (see
+# ADR-003, ADR-005 in .ai/DECISIONS.md). When Phase 2 begins, this file
+# should gain: numpy, pandas, matplotlib, scipy, scikit-learn.
