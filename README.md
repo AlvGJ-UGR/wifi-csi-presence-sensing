@@ -4,6 +4,8 @@
 
 Proyecto personal de investigación aplicada en sensado RF, dentro de mi portfolio de Ingeniería de Telecomunicaciones. Repositorio principal del portfolio: [Telecom-portfolio](https://github.com/AlvGJ-UGR/Telecom-portfolio).
 
+📄 **Página del proyecto (formato artículo/TFG, con panel de estado en vivo):** [ver sitio](https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/) — *URL asumida a partir del nombre del repositorio; confirmar tras activar GitHub Pages (ver `docs/GITHUB_PAGES.md`).*
+
 ---
 
 ## Tabla de contenidos
@@ -18,9 +20,10 @@ Proyecto personal de investigación aplicada en sensado RF, dentro de mi portfol
 8. [Cómo empezar](#cómo-empezar-para-retomar-el-proyecto)
 9. [Estructura del repositorio](#estructura-del-repositorio)
 10. [Limitaciones y consideraciones honestas](#limitaciones-y-consideraciones-honestas)
-11. [Referencias y trabajo relacionado (enlaces)](#referencias-y-trabajo-relacionado-enlaces)
-12. [Contacto](#contacto)
-13. [Licencia](#licencia)
+11. [Ética y consentimiento](#ética-y-consentimiento)
+12. [Referencias y trabajo relacionado (enlaces)](#referencias-y-trabajo-relacionado-enlaces)
+13. [Contacto](#contacto)
+14. [Licencia](#licencia)
 
 ---
 
@@ -153,21 +156,32 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 ```
 wifi-csi-presence-sensing/
 ├── README.md                 (este documento)
+├── requirements.txt           dependencias Python (host tooling; deps de análisis se añaden en Fase 2)
 ├── firmware/                 firmware ESP32 (basado en esp-csi) para captura de CSI
+├── tools/                    scripts de host: automatización y validación de sesiones (no procesamiento)
 ├── analysis/                 pipeline Python: extracción de características, detector, ML, evaluación
 ├── data/
 │   ├── raw/                  capturas CSI crudas, etiquetadas por sesión
 │   └── labeled/               datasets procesados listos para entrenar/evaluar
-├── docs/                     notas técnicas, protocolo de recolección, decisiones de diseño
+├── docs/                     notas técnicas + sitio de GitHub Pages (index.html, assets/) — ver docs/GITHUB_PAGES.md
 └── results/                  gráficas y métricas de evaluación (matrices de confusión, ROC, etc.)
 ```
 
 ## Limitaciones y consideraciones honestas
 
-- **No es identificación de personas**, solo presencia/movimiento — cualquier extensión hacia biometría CSI plantea consideraciones de privacidad que están fuera del alcance de este proyecto.
+- **El alcance inicial (Fases 1-6) se centra en presencia/movimiento binario, no en identificación de personas** — esto es una decisión de alcance incremental (empezar por el problema más simple y añadir complejidad después, ver ADR-003 en `.ai/DECISIONS.md`), no una exclusión permanente por motivos de privacidad. Explorar firmas CSI individuales (identificación/re-identificación) está documentado como extensión futura en `MASTER_PLAN.md` y permanece dentro del alcance de investigación de este proyecto — ver "Ética y consentimiento" más abajo para las condiciones bajo las que se llevaría a cabo.
 - **Requiere recalibración por entorno**: un modelo entrenado en una habitación no se espera que generalice directamente a otra sin reajuste — se documentará explícitamente si esto ocurre en la fase de evaluación, en vez de asumir que no.
 - **Consumo energético**: la captura continua de CSI requiere el radio WiFi activo permanentemente, a diferencia de sensores PIR que duermen la mayor parte del tiempo — no es apta para nodos de batería de larga duración sin trabajo adicional de gestión de energía.
 - **Multi-persona**: distinguir cuántas personas hay (no solo si hay alguna) es sustancialmente más difícil y se deja fuera del alcance inicial (posible extensión futura).
+
+## Ética y consentimiento
+
+Este proyecto es investigación personal de laboratorio, no un producto ni un sistema desplegado. En toda sesión que involucre personas se aplica lo siguiente:
+
+- **Consentimiento informado por sesión**: cualquier captura con participantes requiere el consentimiento explícito de cada uno para esa sesión concreta — no basta con un consentimiento general asumido a nivel de proyecto. `metadata.json` lo registra explícitamente por sesión (ver `docs/acquisition_protocol.md`), y `tools/capture_session.py` lo exige en el momento de la captura.
+- **Anonimización**: los datasets nunca almacenan nombres reales — solo códigos de participante anónimos (p. ej. `P01`).
+- **Sin despliegue fuera del laboratorio**: ningún dataset o modelo producido por este proyecto está destinado a identificación o seguimiento de personas no consintientes, ni a uso fuera del contexto de investigación controlada en el que se genera.
+- **Extensiones hacia identificación individual**: cualquier fase que apunte específicamente a identificación de personas (más allá de la línea base de presencia/movimiento) se trata como un sub-alcance revisado por separado, con su propia entrada documentada en `.ai/DECISIONS.md` (ADR-010) antes de implementarse.
 
 ## Referencias y trabajo relacionado (enlaces)
 
