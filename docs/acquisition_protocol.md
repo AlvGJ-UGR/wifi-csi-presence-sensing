@@ -45,6 +45,8 @@ Example: `data/raw/20260702_183000_modoB_presente_estatico_2m/`
   "esp32_sta_placement": "free-text (height, orientation)",
   "wifi_channel": 6,
   "num_people": 0,
+  "participant_consent_obtained": "true | false | n/a (n/a only valid when num_people is 0)",
+  "participant_ids": ["P01"],
   "notes_ref": "notes.md"
 }
 ```
@@ -52,6 +54,31 @@ Example: `data/raw/20260702_183000_modoB_presente_estatico_2m/`
 Every field is mandatory except `notes_ref`. If a field is genuinely
 unknown, write `"unknown"` explicitly — do not omit the key. Silent omission
 is what makes datasets impossible to audit later.
+
+### Consent fields (ADR-010)
+
+- `participant_consent_obtained` is mandatory whenever `num_people > 0`. A
+  session with people and no recorded consent is not a valid session — do
+  not backfill this field after the fact from memory; obtain and record
+  consent before capturing.
+- `participant_ids` holds anonymised codes only (e.g. `P01`, `P02`) — never
+  real names. Keep the mapping from code to real identity, if you need one
+  at all, outside this repository entirely (e.g. a private, access-controlled
+  note), never in `data/`.
+- These fields exist to make the ethical scope in `README.md` → "Ética y
+  consentimiento" operationally enforced, not just stated.
+
+## Tooling
+
+`tools/capture_session.py` automates producing a session folder in this
+exact format directly from a live serial capture — see `tools/README.md`
+for usage and an important caveat about the raw CSV schema below (the
+column layout depends on the exact firmware build in use, which is not
+yet finalised).
+
+`tools/validate_session.py` checks a captured session folder against this
+schema and the ADR-010 consent requirements. Run it right after each
+capture, before trusting the session — see `tools/README.md`.
 
 ## Raw CSV format (`csi_raw.csv`)
 
