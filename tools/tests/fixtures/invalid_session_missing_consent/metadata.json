@@ -1,0 +1,17 @@
+{
+  "session_id": "SYNTHETIC_TEST_FIXTURE_invalid_missing_consent",
+  "mode": "modoB",
+  "label": "presente_estatico",
+  "distance_m": 2.0,
+  "start_time_utc": "2000-01-01T00:00:00Z",
+  "end_time_utc": "2000-01-01T00:01:00Z",
+  "environment": "SYNTHETIC TEST FIXTURE -- not a real capture, used only to test tools/validate_session.py",
+  "wall_type": "none",
+  "esp32_ap_placement": "n/a (fixture)",
+  "esp32_sta_placement": "n/a (fixture)",
+  "wifi_channel": 6,
+  "num_people": 2,
+  "participant_consent_obtained": false,
+  "participant_ids": [],
+  "notes_ref": "notes.md"
+}

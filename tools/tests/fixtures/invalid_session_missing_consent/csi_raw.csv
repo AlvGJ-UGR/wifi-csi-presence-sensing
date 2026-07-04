@@ -1,0 +1,4 @@
+# SYNTHETIC TEST FIXTURE -- not a real CSI capture. Used only to unit-test
+# tools/validate_session.py.
+1000,PLACEHOLDER_LINE_1
+2000,PLACEHOLDER_LINE_2
