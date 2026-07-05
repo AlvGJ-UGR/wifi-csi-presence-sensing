@@ -1,10 +1,15 @@
 # 📡👻 Sensado de presencia mediante WiFi CSI (a través de paredes, sin cámara)
 
+![License: MIT](https://img.shields.io/badge/license-MIT-4FD1C5?style=flat-square)
+![Fase actual: 1 de 9](https://img.shields.io/badge/fase_actual-1%20de%209-E8A33D?style=flat-square)
+![Hardware: ESP32](https://img.shields.io/badge/hardware-ESP32--WROOM-1B232C?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.x-3776AB?style=flat-square&logo=python&logoColor=white)
+
 > Detección de presencia y movimiento humano usando Channel State Information (CSI) de WiFi sobre ESP32 — sin cámaras, sin micrófonos, sin sensores dedicados. Solo las distorsiones que el cuerpo humano provoca en las señales de radio que ya están en el aire.
 
 Proyecto personal de investigación aplicada en sensado RF, dentro de mi portfolio de Ingeniería de Telecomunicaciones. Repositorio principal del portfolio: [Telecom-portfolio](https://github.com/AlvGJ-UGR/Telecom-portfolio).
 
-📄 **Página del proyecto (formato artículo/TFG, con panel de estado en vivo):** [ver sitio](https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/) — *URL asumida a partir del nombre del repositorio; confirmar tras activar GitHub Pages (ver `docs/GITHUB_PAGES.md`).*
+📄 **Página del proyecto (formato artículo/TFG, con panel de estado en vivo, glosario y guía de citación):** [ver sitio](https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/) — *URL asumida a partir del nombre del repositorio; confirmar tras activar GitHub Pages (ver `docs/GITHUB_PAGES.md`).*
 
 ---
 
@@ -89,11 +94,13 @@ Detalle de cada modo (se documentará cuál rinde mejor en la práctica):
 
 | Elemento | Cantidad | Ya disponible |
 |---|---|---|
-| ESP32-WROOM | 2 (mínimo) | Sí |
+| ESP32-WROOM | 2 (mínimo) | Ver nota¹ |
 | Router WiFi 2.4GHz (para modo alternativo) | 1 | Sí (doméstico) |
 | Cable USB / fuente de alimentación | 2 | Sí |
 
-Coste adicional: **0€** — este es el único proyecto del portfolio que no requiere ninguna compra, todo el hardware ya está disponible.
+Coste adicional estimado: **0€** si el hardware ya está en mano, o el precio de 2 placas ESP32-WROOM si no.
+
+¹ *Nota de honestidad (2026-07-02): esta tabla asumía originalmente que los ESP32 ya estaban en mano. En una sesión de trabajo posterior se indicó que la adquisición del hardware estaba en curso, no confirmada. Se deja explícito aquí — en vez de en documentación interna no pública — hasta que se confirme el estado real, para no afirmar como hecho algo sin verificar (ver el principio de honestidad científica del proyecto).*
 
 ## Metodología
 
@@ -137,19 +144,27 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 
 ## Roadmap y fases
 
-- [ ] **Fase 1 — Prueba de concepto de adquisición**: flashear `esp-csi` en un ESP32, confirmar que se puede capturar y guardar CSI crudo en ambas configuraciones (router existente / dos ESP32)
-- [ ] **Fase 2 — Recolección de dataset propio**: ejecutar el protocolo de la sección de metodología, generar un dataset etiquetado propio (no usar solo datasets públicos, para poder caracterizar mi propio entorno real)
-- [ ] **Fase 3 — Detector baseline + evaluación**: implementar el detector por varianza/umbral, generar matriz de confusión y curva ROC
-- [ ] **Fase 4 — Clasificador ligero + comparación**: entrenar y evaluar SVM/kNN, comparar contra el baseline en accuracy, latencia y viabilidad de correr en el ESP32
-- [ ] **Fase 5 — Caracterización sistemática**: barrido de distancia/pared/nº de personas, gráficas de degradación de accuracy
-- [ ] **Fase 6 (opcional)** — Dashboard en tiempo real y/o integración con Home Assistant, una vez validado el pipeline
+> Esta lista usa la misma numeración de fases (0–9) que `.ai/MASTER_PLAN.md` y el panel de estado del [sitio del proyecto](https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/) — deliberadamente, para que README, plan maestro y sitio público nunca cuenten historias distintas sobre en qué fase está el proyecto.
+
+- [x] **Fase 0 — Preparación del repositorio**: estructura, documentación, flujo de trabajo, arquitectura definida. *(Completa.)*
+- [ ] **Fase 1 — Adquisición de CSI**: flashear `esp-csi`, validar salida serie estable, capturar y guardar sesiones crudas etiquetadas. *(Documentación e infraestructura de captura/validación completas; la captura real está bloqueada por acceso físico al hardware — ver `docs/hardware_configuration.md`.)*
+- [ ] **Fase 2 — Caracterización de la señal**: visualizar CSI, estudiar amplitud/fase/tasa de paquetes, comparar estático vs. movimiento, antes de diseñar ningún detector.
+- [ ] **Fase 3 — Generación del dataset**: ejecutar el protocolo de recolección de forma sistemática (distancia, pared, estado), producir un dataset propio etiquetado y reproducible.
+- [ ] **Fase 4 — Detección clásica**: detector baseline por varianza/umbral adaptativo, evaluado con matriz de confusión, ROC, latencia.
+- [ ] **Fase 5 — Ingeniería de características**: PCA, energía en banda de movimiento, STFT — extracción justificada, no solo "lo que funcione".
+- [ ] **Fase 6 — Machine Learning**: SVM/kNN comparados cuantitativamente contra el baseline de la Fase 4 — nunca evaluados en aislamiento.
+- [ ] **Fase 7 — Caracterización RF**: barrido sistemático de distancia, tipo de pared, nº de personas; gráficas de degradación de accuracy.
+- [ ] **Fase 8 — Integración** *(opcional)*: dashboard en tiempo real y/o integración con Home Assistant, una vez validado el pipeline completo.
+- [ ] **Fase 9 — Documentación final**: consolidación en formato de calidad de publicación/entrevista técnica.
+
+Detalle completo de objetivos, tareas y criterios de finalización de cada fase en `.ai/MASTER_PLAN.md`.
 
 ## Cómo empezar (para retomar el proyecto)
 
 1. Flashear el firmware base de `esp-csi` en un ESP32 (Fase 1) — de momento no hay firmware propio en `firmware/`, se parte del ejemplo oficial de Espressif y se adapta según haga falta.
 2. Confirmar captura de CSI crudo por serie, guardar unas muestras de prueba en `data/raw/` con el formato de sesión descrito en "Protocolo de recolección de datos".
 3. Escribir el primer script de `analysis/` que simplemente cargue esas muestras y grafique amplitud por subportadora en el tiempo — antes de cualquier detector, hay que *ver* la señal primero.
-4. A partir de ahí, seguir el roadmap de fases en orden; no saltar a clasificadores (Fase 4) sin tener el baseline (Fase 3) evaluado, o no habrá con qué comparar si el modelo complejo realmente aporta algo.
+4. A partir de ahí, seguir el roadmap de fases en orden; no saltar a Machine Learning (Fase 6) sin tener el detector baseline (Fase 4) evaluado, o no habrá con qué comparar si el modelo complejo realmente aporta algo.
 
 ## Estructura del repositorio
 
@@ -157,6 +172,7 @@ Para tener un criterio de éxito concreto en vez de solo "que funcione", estos s
 wifi-csi-presence-sensing/
 ├── README.md                 (este documento)
 ├── requirements.txt           dependencias Python (host tooling; deps de análisis se añaden en Fase 2)
+├── .github/workflows/         despliegue opcional de Pages vía GitHub Actions (ver docs/GITHUB_PAGES.md)
 ├── firmware/                 firmware ESP32 (basado en esp-csi) para captura de CSI
 ├── tools/                    scripts de host: automatización y validación de sesiones (no procesamiento)
 ├── analysis/                 pipeline Python: extracción de características, detector, ML, evaluación
@@ -169,7 +185,7 @@ wifi-csi-presence-sensing/
 
 ## Limitaciones y consideraciones honestas
 
-- **El alcance inicial (Fases 1-6) se centra en presencia/movimiento binario, no en identificación de personas** — esto es una decisión de alcance incremental (empezar por el problema más simple y añadir complejidad después, ver ADR-003 en `.ai/DECISIONS.md`), no una exclusión permanente por motivos de privacidad. Explorar firmas CSI individuales (identificación/re-identificación) está documentado como extensión futura en `MASTER_PLAN.md` y permanece dentro del alcance de investigación de este proyecto — ver "Ética y consentimiento" más abajo para las condiciones bajo las que se llevaría a cabo.
+- **El alcance inicial (Fases 0–9, ver `.ai/MASTER_PLAN.md`) se centra en presencia/movimiento binario, no en identificación de personas** — esto es una decisión de alcance incremental (empezar por el problema más simple y añadir complejidad después, ver ADR-003 en `.ai/DECISIONS.md`), no una exclusión permanente por motivos de privacidad. Explorar firmas CSI individuales (identificación/re-identificación) está documentado como extensión futura, fuera de las fases 0–9, en `MASTER_PLAN.md` — y permanece dentro del alcance de investigación de este proyecto, no descartado. Ver "Ética y consentimiento" más abajo para las condiciones bajo las que se llevaría a cabo.
 - **Requiere recalibración por entorno**: un modelo entrenado en una habitación no se espera que generalice directamente a otra sin reajuste — se documentará explícitamente si esto ocurre en la fase de evaluación, en vez de asumir que no.
 - **Consumo energético**: la captura continua de CSI requiere el radio WiFi activo permanentemente, a diferencia de sensores PIR que duermen la mayor parte del tiempo — no es apta para nodos de batería de larga duración sin trabajo adicional de gestión de energía.
 - **Multi-persona**: distinguir cuántas personas hay (no solo si hay alguna) es sustancialmente más difícil y se deja fuera del alcance inicial (posible extensión futura).
