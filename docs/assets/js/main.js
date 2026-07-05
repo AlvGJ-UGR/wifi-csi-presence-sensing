@@ -56,4 +56,47 @@
     );
     revealTargets.forEach(function (el) { observer.observe(el); });
   }
+
+  // Scrollspy: highlight the nav link matching the section currently in view
+  if ("IntersectionObserver" in window) {
+    var navLinks = Array.prototype.slice.call(navList ? navList.querySelectorAll('a[href^="#"]') : []);
+    var linkById = {};
+    navLinks.forEach(function (link) {
+      var id = link.getAttribute("href").slice(1);
+      linkById[id] = link;
+    });
+    var spySections = Object.keys(linkById)
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    var spyObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          var id = entry.target.id;
+          var link = linkById[id];
+          if (!link) return;
+          if (entry.isIntersecting) {
+            navLinks.forEach(function (l) { l.classList.remove("is-active"); });
+            link.classList.add("is-active");
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+    spySections.forEach(function (section) { spyObserver.observe(section); });
+  }
+
+  // Back-to-top button: appears after scrolling past the hero, scrolls smoothly to #top
+  var backToTop = document.getElementById("backToTop");
+  if (backToTop) {
+    var toggleBackToTop = function () {
+      if (window.scrollY > 480) {
+        backToTop.classList.add("is-visible");
+      } else {
+        backToTop.classList.remove("is-visible");
+      }
+    };
+    window.addEventListener("scroll", toggleBackToTop, { passive: true });
+    toggleBackToTop();
+  }
 })();
