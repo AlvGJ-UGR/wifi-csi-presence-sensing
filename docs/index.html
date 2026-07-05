@@ -6,6 +6,33 @@
 <title>Sensado de presencia mediante WiFi CSI — Proyecto de investigación RF</title>
 <meta name="description" content="Investigación aplicada en sensado de presencia humana mediante WiFi Channel State Information (CSI) sobre ESP32. Metodología, arquitectura, ética y estado del proyecto.">
 
+<!-- Favicon: inline SVG, instrument-panel glyph, no extra file needed -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2312181F'/%3E%3Crect x='6' y='6' width='20' height='20' rx='2' fill='none' stroke='%23E8A33D' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%234FD1C5'/%3E%3C/svg%3E">
+
+<!-- Open Graph / Twitter Card -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sensado de presencia mediante WiFi CSI">
+<meta property="og:description" content="Detección de presencia y movimiento humano a través de paredes, sin cámara — usando WiFi Channel State Information sobre ESP32. Proyecto de investigación aplicada con metodología, arquitectura y estado documentados en profundidad.">
+<meta property="og:url" content="https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/">
+<meta property="og:site_name" content="WiFi CSI Presence Sensing">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sensado de presencia mediante WiFi CSI">
+<meta name="twitter:description" content="Investigación aplicada en sensado RF: presencia humana a través de paredes vía WiFi CSI sobre ESP32.">
+
+<!-- JSON-LD: structured data for a research/software project -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ResearchProject",
+  "name": "Sensado de presencia mediante WiFi CSI",
+  "description": "Investigación aplicada en detección de presencia y movimiento humano mediante WiFi Channel State Information (CSI) capturado con ESP32, sin cámaras ni micrófonos.",
+  "url": "https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/",
+  "codeRepository": "https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing",
+  "license": "https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/LICENSE",
+  "keywords": ["WiFi CSI", "Channel State Information", "ESP32", "sensado RF", "presencia humana", "802.11", "OFDM"]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,6 +60,7 @@
         <li><a href="#etica">Ética</a></li>
         <li><a href="#estado">Estado</a></li>
         <li><a href="#recursos">Recursos</a></li>
+        <li><a href="#glosario">Glosario</a></li>
         <li><a href="#referencias">Referencias</a></li>
         <li><a class="nav-list__cta" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing" target="_blank" rel="noopener">Repositorio ↗</a></li>
       </ul>
@@ -58,6 +86,25 @@
         <span>Sensado RF</span><span aria-hidden="true">·</span>
         <span>802.11n/ac OFDM</span>
       </div>
+      <ul class="stat-strip" aria-label="Datos rápidos del proyecto">
+        <li class="stat-card">
+          <span class="stat-card__value">0€*</span>
+          <span class="stat-card__label">Coste adicional de hardware</span>
+        </li>
+        <li class="stat-card">
+          <span class="stat-card__value">2×</span>
+          <span class="stat-card__label">ESP32-WROOM</span>
+        </li>
+        <li class="stat-card">
+          <span class="stat-card__value">10</span>
+          <span class="stat-card__label">Fases de investigación (0–9)</span>
+        </li>
+        <li class="stat-card">
+          <span class="stat-card__value">MIT</span>
+          <span class="stat-card__label">Licencia de código abierto</span>
+        </li>
+      </ul>
+      <p class="stat-strip__note">* Sujeto a confirmación de si el hardware ya está en mano — ver <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md#hardware" target="_blank" rel="noopener">README → Hardware</a>.</p>
     </div>
 
     <!-- SIGNATURE ELEMENT: instrument-style phase status panel, reflecting real PROJECT_STATE.md -->
@@ -493,9 +540,53 @@ flowchart LR
       </div>
     </section>
 
+    <!-- ============ GLOSARIO ============ -->
+    <section class="section" id="glosario" aria-labelledby="glosario-title">
+      <p class="section-eyebrow">§10</p>
+      <h2 id="glosario-title" class="section-title">Glosario</h2>
+      <div class="table-wrap panel">
+        <table>
+          <thead><tr><th>Término</th><th>Significado en este proyecto</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CSI</strong> (Channel State Information)</td><td>Estimación por subportadora de cómo el canal WiFi afecta a la señal (amplitud y fase), calculada por el receptor para poder demodular correctamente.</td></tr>
+            <tr><td><strong>OFDM</strong></td><td>Modulación multiportadora usada por 802.11n/ac: la señal se divide en decenas de subportadoras ortogonales transmitidas simultáneamente.</td></tr>
+            <tr><td><strong>Subportadora</strong></td><td>Cada una de las frecuencias individuales dentro de un símbolo OFDM; el CSI se estima de forma independiente para cada una.</td></tr>
+            <tr><td><strong>Multicamino (multipath)</strong></td><td>Fenómeno por el cual una señal de radio llega al receptor por varias trayectorias reflejadas, que interfieren entre sí. Un cuerpo humano en movimiento altera estas trayectorias de forma medible.</td></tr>
+            <tr><td><strong>PCA</strong> (Análisis de Componentes Principales)</td><td>Técnica de reducción de dimensionalidad usada para pasar de decenas de subportadoras a unas pocas componentes que capturan la mayor parte de la varianza.</td></tr>
+            <tr><td><strong>STFT</strong> (Short-Time Fourier Transform)</td><td>Transformada de Fourier aplicada en ventanas deslizantes, usada aquí para estimar energía de la señal en banda de movimiento a lo largo del tiempo.</td></tr>
+            <tr><td><strong>Modo A / Modo B</strong></td><td>Las dos configuraciones de adquisición contempladas: Modo A usa el router doméstico existente; Modo B usa dos ESP32 dedicados (AP + STA). Ver §4, Arquitectura.</td></tr>
+            <tr><td><strong>Detector baseline</strong></td><td>Detector clásico y explicable (umbral adaptativo sobre varianza) contra el que se compara obligatoriamente cualquier clasificador de ML — nunca se evalúa un modelo complejo en aislamiento.</td></tr>
+            <tr><td><strong>Sesión (session)</strong></td><td>Una captura etiquetada e inmutable, con su propio <code>metadata.json</code>, según el formato de <code>docs/acquisition_protocol.md</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ CÓMO CITAR ============ -->
+    <section class="section" id="citar" aria-labelledby="citar-title">
+      <p class="section-eyebrow">§11</p>
+      <h2 id="citar-title" class="section-title">Cómo citar este proyecto</h2>
+      <p>
+        Este no es un trabajo publicado en una revista o congreso — es un proyecto de portfolio personal en
+        desarrollo activo. Aun así, si resulta útil como referencia (por ejemplo, en otro proyecto de
+        estudiante o en una revisión de herramientas de CSI sensing), esta es la forma sugerida de citarlo:
+      </p>
+      <div class="panel cite-box">
+        <pre><code>Guijarro (AlvGJ-UGR). "Sensado de presencia mediante WiFi CSI: detección de
+presencia y movimiento humano a través de paredes sin cámara." Proyecto de
+investigación aplicada, Ingeniería de Telecomunicaciones, 2026.
+Repositorio: https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing</code></pre>
+      </div>
+      <p class="cite-note">
+        Como el proyecto sigue en desarrollo, cualquier cita a resultados concretos debería referenciar el
+        commit o la fecha exacta consultada — los números y conclusiones de las fases aún no completadas
+        (ver panel de estado, arriba) cambiarán a medida que existan datos reales.
+      </p>
+    </section>
+
     <!-- ============ REFERENCIAS ============ -->
     <section class="section" id="referencias" aria-labelledby="referencias-title">
-      <p class="section-eyebrow">§10</p>
+      <p class="section-eyebrow">§12</p>
       <h2 id="referencias-title" class="section-title">Referencias y trabajo relacionado</h2>
       <ul class="ref-list">
         <li>Espressif — <a href="https://github.com/espressif/esp-csi" target="_blank" rel="noopener">esp-csi</a> (framework y ejemplos oficiales)</li>
@@ -508,7 +599,7 @@ flowchart LR
 
     <!-- ============ DOCUMENTACIÓN DEL REPOSITORIO ============ -->
     <section class="section" id="documentacion" aria-labelledby="documentacion-title">
-      <p class="section-eyebrow">§11</p>
+      <p class="section-eyebrow">§13</p>
       <h2 id="documentacion-title" class="section-title">Documentación técnica completa</h2>
       <p>Esta página es una síntesis narrativa. La documentación técnica exhaustiva vive en el repositorio:</p>
       <div class="doc-links">
@@ -518,10 +609,10 @@ flowchart LR
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/firmware/README.md" target="_blank" rel="noopener">
           <span class="doc-link__title">firmware/README.md</span><span class="doc-link__desc">Guía de flasheo de esp-csi</span>
         </a>
-        <a class="doc-link" href="acquisition_protocol.md">
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/acquisition_protocol.md" target="_blank" rel="noopener">
           <span class="doc-link__title">docs/acquisition_protocol.md</span><span class="doc-link__desc">Formato de sesión y esquema de metadatos</span>
         </a>
-        <a class="doc-link" href="hardware_configuration.md">
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/hardware_configuration.md" target="_blank" rel="noopener">
           <span class="doc-link__title">docs/hardware_configuration.md</span><span class="doc-link__desc">Configuración de hardware y checklist</span>
         </a>
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/tools/README.md" target="_blank" rel="noopener">
@@ -533,11 +624,13 @@ flowchart LR
   </div>
 </main>
 
+<a href="#top" class="back-to-top" id="backToTop" aria-label="Volver arriba">↑</a>
+
 <footer class="site-footer">
   <div class="wrap site-footer__inner">
     <p>MIT License · <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/LICENSE" target="_blank" rel="noopener">ver LICENSE</a></p>
     <p>Repositorio principal del portfolio: <a href="https://github.com/AlvGJ-UGR/Telecom-portfolio" target="_blank" rel="noopener">Telecom-portfolio</a></p>
-    <p>Contacto: <a href="mailto:alvarogj1@correo.ugr.es">alvarogj1@correo.ugr.es</a></p>
+    <p>GitHub: <a href="https://github.com/AlvGJ-UGR" target="_blank" rel="noopener">@AlvGJ-UGR</a> · Contacto: <a href="mailto:alvarogj1@correo.ugr.es">alvarogj1@correo.ugr.es</a></p>
   </div>
 </footer>
 
