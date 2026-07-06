@@ -3,23 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sensado de presencia mediante WiFi CSI — Proyecto de investigación RF</title>
-<meta name="description" content="Investigación aplicada en sensado de presencia humana mediante WiFi Channel State Information (CSI) sobre ESP32. Metodología, arquitectura, ética y estado del proyecto.">
+<title>WiFi CSI Presence Sensing — tu router ya sabe si hay alguien en casa</title>
+<meta name="description" content="Un proyecto de investigación aplicada que convierte las distorsiones que un cuerpo humano provoca en la señal WiFi en un sensor de presencia, usando dos ESP32 de bajo coste.">
 
-<!-- Favicon: inline SVG, instrument-panel glyph, no extra file needed -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2312181F'/%3E%3Crect x='6' y='6' width='20' height='20' rx='2' fill='none' stroke='%23E8A33D' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%234FD1C5'/%3E%3C/svg%3E">
 
-<!-- Open Graph / Twitter Card -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Sensado de presencia mediante WiFi CSI">
-<meta property="og:description" content="Detección de presencia y movimiento humano a través de paredes, sin cámara — usando WiFi Channel State Information sobre ESP32. Proyecto de investigación aplicada con metodología, arquitectura y estado documentados en profundidad.">
+<meta property="og:title" content="WiFi CSI Presence Sensing">
+<meta property="og:description" content="Detección de presencia humana a través de paredes usando WiFi Channel State Information sobre ESP32 — sin cámara.">
 <meta property="og:url" content="https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/">
 <meta property="og:site_name" content="WiFi CSI Presence Sensing">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Sensado de presencia mediante WiFi CSI">
-<meta name="twitter:description" content="Investigación aplicada en sensado RF: presencia humana a través de paredes vía WiFi CSI sobre ESP32.">
+<meta name="twitter:title" content="WiFi CSI Presence Sensing">
+<meta name="twitter:description" content="Un router WiFi ya sabe si hay alguien en la habitación. Este proyecto mide esa señal.">
 
-<!-- JSON-LD: structured data for a research/software project -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -37,6 +34,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -53,15 +54,11 @@
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-list" id="navList">
-        <li><a href="#resumen">Resumen</a></li>
-        <li><a href="#fundamento">Fundamento</a></li>
-        <li><a href="#arquitectura">Arquitectura</a></li>
-        <li><a href="#metodologia">Metodología</a></li>
-        <li><a href="#etica">Ética</a></li>
+        <li><a href="#funciona">Cómo funciona</a></li>
+        <li><a href="#ingenieria">Ingeniería</a></li>
         <li><a href="#estado">Estado</a></li>
+        <li><a href="#honestidad">Límites</a></li>
         <li><a href="#recursos">Recursos</a></li>
-        <li><a href="#glosario">Glosario</a></li>
-        <li><a href="#referencias">Referencias</a></li>
         <li><a class="nav-list__cta" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing" target="_blank" rel="noopener">Repositorio ↗</a></li>
       </ul>
     </nav>
@@ -70,555 +67,272 @@
 
 <main id="contenido">
 
-  <!-- ============ HERO ============ -->
+  <!-- ============ HERO — one claim, one visual, nothing else ============ -->
   <section class="hero" id="top">
-    <div class="hero__inner">
-      <p class="eyebrow">Proyecto de investigación · Ingeniería de Telecomunicaciones</p>
-      <h1 class="hero__title">Sensado de presencia mediante<br><span class="hero__title-accent">WiFi&nbsp;CSI</span></h1>
-      <p class="hero__lede">
-        Detección de presencia y movimiento humano a través de paredes — sin cámaras, sin micrófonos,
-        sin sensores dedicados. Solo las distorsiones que un cuerpo humano provoca en señales de radio
-        que ya están en el aire, capturadas con microcontroladores ESP32 de bajo coste.
-      </p>
-      <div class="hero__meta">
-        <span>ESP32</span><span aria-hidden="true">·</span>
-        <span>Channel State Information</span><span aria-hidden="true">·</span>
-        <span>Sensado RF</span><span aria-hidden="true">·</span>
-        <span>802.11n/ac OFDM</span>
-      </div>
-      <ul class="stat-strip" aria-label="Datos rápidos del proyecto">
-        <li class="stat-card">
-          <span class="stat-card__value">0€*</span>
-          <span class="stat-card__label">Coste adicional de hardware</span>
-        </li>
-        <li class="stat-card">
-          <span class="stat-card__value">2×</span>
-          <span class="stat-card__label">ESP32-WROOM</span>
-        </li>
-        <li class="stat-card">
-          <span class="stat-card__value">10</span>
-          <span class="stat-card__label">Fases de investigación (0–9)</span>
-        </li>
-        <li class="stat-card">
-          <span class="stat-card__value">MIT</span>
-          <span class="stat-card__label">Licencia de código abierto</span>
-        </li>
-      </ul>
-      <p class="stat-strip__note">* Sujeto a confirmación de si el hardware ya está en mano — ver <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md#hardware" target="_blank" rel="noopener">README → Hardware</a>.</p>
-    </div>
+    <p class="eyebrow">Investigación aplicada · ESP32 · WiFi CSI</p>
+    <h1 class="hero__title">Tu WiFi ya sabe si<br>hay alguien en la habitación.</h1>
+    <p class="hero__lede">
+      Este proyecto mide las distorsiones que un cuerpo humano provoca en la señal WiFi que ya
+      existe en el aire, y las convierte en un sensor de presencia — sin cámara, con dos placas
+      ESP32 de bajo coste.
+    </p>
+    <a class="hero__status-pill" href="#estado">
+      <span class="led led--active" aria-hidden="true"></span>
+      Fase 1 de 9 · captura bloqueada por hardware — ver estado real ↓
+    </a>
+  </section>
 
-    <!-- SIGNATURE ELEMENT: instrument-style phase status panel, reflecting real PROJECT_STATE.md -->
-    <div class="panel status-panel" aria-labelledby="status-panel-title">
-      <div class="status-panel__header">
-        <h2 id="status-panel-title" class="status-panel__title">Panel de estado — Fases del proyecto</h2>
-        <span class="status-panel__updated">Última actualización: 2026-07-04 · Fase actual: 1/9</span>
-      </div>
-      <ol class="status-grid" role="list">
-        <li class="status-led status-led--done">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">00</span>
-          <span class="status-led__label">Preparación del repositorio</span>
-          <span class="status-led__tag">completa</span>
-        </li>
-        <li class="status-led status-led--active">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">01</span>
-          <span class="status-led__label">Adquisición CSI</span>
-          <span class="status-led__tag">en curso — bloqueada por hardware</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">02</span>
-          <span class="status-led__label">Caracterización de la señal</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">03</span>
-          <span class="status-led__label">Generación del dataset</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">04</span>
-          <span class="status-led__label">Detección clásica</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">05</span>
-          <span class="status-led__label">Ingeniería de características</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">06</span>
-          <span class="status-led__label">Machine Learning</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">07</span>
-          <span class="status-led__label">Caracterización RF</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">08</span>
-          <span class="status-led__label">Integración (opcional)</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-        <li class="status-led">
-          <span class="led" aria-hidden="true"></span>
-          <span class="status-led__num">09</span>
-          <span class="status-led__label">Documentación final</span>
-          <span class="status-led__tag">pendiente</span>
-        </li>
-      </ol>
-      <p class="status-panel__note">
-        Este panel refleja el estado documentado en <code>.ai/PROJECT_STATE.md</code> en el momento de publicación.
-        Se actualiza manualmente tras cada hito real — nunca se adelanta a lo que se ha verificado.
-      </p>
+  <!-- ============ EN UN MINUTO — visual intuition, near-zero jargon ============ -->
+  <section class="intuition" id="intuicion" aria-label="Cómo funciona, en tres pasos">
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Un router emitiendo ondas WiFi">
+        <rect x="48" y="70" width="24" height="14" rx="2" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="54" y1="70" x2="50" y2="52" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="66" y1="70" x2="70" y2="52" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 30 60 Q 60 30 90 60" fill="none" stroke="var(--amber)" stroke-width="2" opacity="0.85"/>
+        <path d="M 20 68 Q 60 20 100 68" fill="none" stroke="var(--amber)" stroke-width="2" opacity="0.5"/>
+        <path d="M 10 76 Q 60 8 110 76" fill="none" stroke="var(--amber)" stroke-width="2" opacity="0.25"/>
+      </svg>
+      <p class="intuition__caption"><strong>El aire ya está lleno de WiFi.</strong> Tu router emite señal constantemente, la haya pedido alguien o no.</p>
+    </div>
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Una persona distorsionando la trayectoria de la señal">
+        <circle cx="60" cy="38" r="10" fill="none" stroke="var(--text)" stroke-width="2"/>
+        <path d="M 60 48 L 60 78 M 48 60 L 72 60 M 60 78 L 50 96 M 60 78 L 70 96" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 15 55 Q 45 40 55 55 Q 65 70 105 55" fill="none" stroke="var(--amber)" stroke-width="2.5"/>
+      </svg>
+      <p class="intuition__caption"><strong>Tu cuerpo la dobla.</strong> Cada trayectoria reflejada cambia de forma medible cuando algo se mueve en ella.</p>
+    </div>
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Un ESP32 midiendo esa distorsión como una señal">
+        <rect x="30" y="42" width="60" height="36" rx="3" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="38" y1="42" x2="38" y2="30" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="52" y1="42" x2="52" y2="30" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="68" y1="42" x2="68" y2="30" stroke="var(--cyan)" stroke-width="2"/>
+        <line x1="82" y1="42" x2="82" y2="30" stroke="var(--cyan)" stroke-width="2"/>
+        <polyline points="36,64 44,58 50,68 58,54 66,66 74,58 84,62" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p class="intuition__caption"><strong>Un ESP32 de 3€ lo mide.</strong> El propio chip WiFi expone ese dato en crudo — Channel State Information (CSI) — sin hardware adicional.</p>
     </div>
   </section>
 
   <div class="wrap">
 
-    <!-- ============ RESUMEN / ABSTRACT ============ -->
-    <section class="section" id="resumen" aria-labelledby="resumen-title">
-      <p class="section-eyebrow">Resumen</p>
-      <h2 id="resumen-title" class="section-title">Abstract</h2>
-      <div class="panel abstract-box">
-        <p>
-          Este proyecto investiga la viabilidad de usar <strong>Channel State Information (CSI)</strong> de WiFi,
-          capturado con microcontroladores ESP32 de bajo coste, como sensor de presencia y movimiento humano sin
-          contacto ni visión artificial. A diferencia de los sensores PIR o las cámaras, el sensado por CSI
-          aprovecha una señal que ya existe en cualquier entorno con WiFi: las distorsiones multicamino que un
-          cuerpo humano introduce en la propagación de la señal entre un emisor y un receptor.
-        </p>
-        <p>
-          El objetivo no es únicamente construir un detector funcional, sino <strong>caracterizar rigurosamente
-          el fenómeno físico subyacente</strong>, comparar un detector estadístico clásico frente a clasificadores
-          ligeros de aprendizaje automático, y documentar con honestidad científica las limitaciones del sistema.
-        </p>
-        <p class="abstract-status">
-          <span class="tag tag--amber">Estado a fecha de esta página</span>
-          El proyecto se encuentra en la <strong>Fase 1 (adquisición de CSI)</strong>. La infraestructura de
-          captura, validación y documentación está completa; la recolección de datos reales está pendiente de
-          acceso físico al hardware. <strong>No se presentan aquí resultados experimentales, gráficas de
-          rendimiento ni datasets</strong> — esta página se actualizará a medida que existan, nunca se sustituirán
-          por resultados simulados o supuestos.
-        </p>
-      </div>
-    </section>
-
-    <!-- ============ MOTIVACIÓN ============ -->
-    <section class="section" id="motivacion" aria-labelledby="motivacion-title">
-      <p class="section-eyebrow">§1</p>
-      <h2 id="motivacion-title" class="section-title">Motivación</h2>
+    <!-- ============ CÓMO FUNCIONA — pipeline first, math optional ============ -->
+    <section class="section" id="funciona" aria-labelledby="funciona-title">
+      <p class="section-eyebrow">Cómo funciona</p>
+      <h2 id="funciona-title" class="section-title">De la antena al detector</h2>
       <p>
-        Todo router WiFi llena el espacio de ondas de radio constantemente. Cuando una persona se mueve, respira
-        o simplemente está de pie en una habitación, perturba esas ondas de forma medible — igual que mover la
-        mano delante de una linterna cambia la sombra proyectada en la pared. El <strong>Channel State
-        Information</strong> es la información de bajo nivel de la capa física WiFi que captura exactamente esa
-        perturbación, y el ESP32 puede extraerla de forma nativa desde su propio chip WiFi, sin hardware
-        adicional ni licencias de investigación.
-      </p>
-      <p>
-        Esto abre dos líneas de interés simultáneas. La primera es práctica: un sustituto de sensor PIR para
-        domótica en espacios donde una cámara no es aceptable por privacidad — baños, dormitorios, vestuarios.
-        La segunda, y la que realmente motiva este proyecto, es formativa: una demostración rigurosa de
-        procesamiento de señal aplicado a un problema de sensado RF real, con metodología de evaluación
-        cuantitativa — el tipo de trabajo que un ingeniero de RF/telecomunicaciones realiza en su día a día,
-        y que puede defenderse con datos propios en una entrevista técnica.
-      </p>
-    </section>
-
-    <!-- ============ FUNDAMENTO TÉCNICO ============ -->
-    <section class="section" id="fundamento" aria-labelledby="fundamento-title">
-      <p class="section-eyebrow">§2</p>
-      <h2 id="fundamento-title" class="section-title">Fundamento técnico: qué es CSI y por qué funciona</h2>
-      <p>
-        En WiFi 802.11n/ac (OFDM), la señal se transmite simultáneamente en decenas de subportadoras ortogonales.
-        El receptor necesita estimar cómo el canal afecta a <em>cada</em> subportadora — atenuación de amplitud
-        y desfase de fase — para poder demodular correctamente. Esa estimación por subportadora, formalmente
-        una respuesta en frecuencia del canal <code>H(f,t)</code> muestreada en <code>K</code> puntos
-        discretos, <em>es</em> el CSI. Normalmente se descarta justo después de usarla para ecualizar la señal;
-        el firmware del ESP32 permite interceptarla antes de que eso ocurra.
-      </p>
-
-      <div class="panel figure-panel">
-        <p class="figure-panel__label">Figura 1 — Ilustración conceptual (no datos reales)</p>
-        <div class="subcarrier-illustration" role="img" aria-label="Ilustración de amplitud por subportadora OFDM, mostrando variación entre subportadoras adyacentes">
-          <div class="bar" style="--h:38%"></div><div class="bar" style="--h:52%"></div><div class="bar" style="--h:61%"></div>
-          <div class="bar" style="--h:45%"></div><div class="bar" style="--h:70%"></div><div class="bar" style="--h:66%"></div>
-          <div class="bar" style="--h:58%"></div><div class="bar" style="--h:80%"></div><div class="bar" style="--h:74%"></div>
-          <div class="bar" style="--h:63%"></div><div class="bar" style="--h:55%"></div><div class="bar" style="--h:69%"></div>
-          <div class="bar" style="--h:48%"></div><div class="bar" style="--h:60%"></div><div class="bar" style="--h:77%"></div>
-          <div class="bar" style="--h:41%"></div><div class="bar" style="--h:56%"></div><div class="bar" style="--h:64%"></div>
-          <div class="bar" style="--h:50%"></div><div class="bar" style="--h:72%"></div>
-        </div>
-        <p class="figure-panel__caption">
-          Amplitud relativa de <code>|H<sub>k</sub>|</code> por subportadora <code>k</code>. La forma exacta del
-          perfil cambia con el entorno y con la presencia/movimiento de un cuerpo en la trayectoria multicamino —
-          el patrón real, capturado, sustituirá esta ilustración cuando exista (Fase 2).
-        </p>
-      </div>
-
-      <p>
-        Cuando algo se mueve en el entorno — una persona, una puerta — cambia la trayectoria multicamino de la
-        señal entre transmisor y receptor, lo que se traduce en variaciones medibles de amplitud y fase en un
-        subconjunto de subportadoras a lo largo del tiempo. La presencia estática (alguien quieto) produce un
-        patrón de CSI distinto pero también detectable — más sutil — que el movimiento activo. Esto es lo que
-        hace que el problema sea interesante desde el punto de vista de procesamiento de señal: no es un simple
-        detector de movimiento por umbral sobre una sola variable.
-      </p>
-    </section>
-
-    <!-- ============ TRABAJO RELACIONADO ============ -->
-    <section class="section" id="relacionado" aria-labelledby="relacionado-title">
-      <p class="section-eyebrow">§3</p>
-      <h2 id="relacionado-title" class="section-title">Trabajo relacionado y diferenciación</h2>
-      <p>
-        Antes de empezar se realizó una revisión del ecosistema existente, tanto para evitar reinventar mal lo
-        que ya existe como para identificar honestamente en qué hueco se sitúa este proyecto.
-      </p>
-      <div class="table-wrap panel">
-        <table>
-          <thead>
-            <tr><th>Proyecto</th><th>Qué es</th><th>Diferenciación</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><a href="https://github.com/espressif/esp-csi" target="_blank" rel="noopener">espressif/esp-csi</a></td>
-              <td>Framework oficial de Espressif, ejemplos de captura CSI y demos</td>
-              <td>Capa de captura de referencia, no un proyecto de evaluación — este proyecto lo usa como base y añade la metodología de evaluación cuantitativa que no incluye</td>
-            </tr>
-            <tr>
-              <td><a href="https://github.com/francescopace/espectre" target="_blank" rel="noopener">francescopace/espectre</a></td>
-              <td>Producto terminado, integración directa a Home Assistant sin código</td>
-              <td>Herramienta "úsalo ya" sin métricas publicadas — este proyecto es lo opuesto: documenta el <em>por qué</em>, con datos de validación propios</td>
-            </tr>
-            <tr>
-              <td><a href="https://github.com/StevenMHernandez/ESP32-CSI-Tool" target="_blank" rel="noopener">StevenMHernandez/ESP32-CSI-Tool</a></td>
-              <td>Toolkit académico de captura, sin pipeline de detección</td>
-              <td>Resuelve solo la adquisición — este proyecto documenta la parte que falta: extracción de características, detector y evaluación</td>
-            </tr>
-            <tr>
-              <td>WiFi DensePose / RuView (pose estimation vía CSI)</td>
-              <td>Sistemas ambiciosos: pose de 17 puntos, ritmo cardíaco, redes neuronales grandes</td>
-              <td>Alcance deliberadamente más modesto: presencia/movimiento con un pipeline explicable paso a paso, defendible en una entrevista técnica</td>
-            </tr>
-            <tr>
-              <td>Papers de HAR (CNN-BiLSTM-Attention, etc.)</td>
-              <td>Investigación centrada en maximizar accuracy en datasets académicos</td>
-              <td>Este proyecto prioriza la caracterización RF (SNR vs. distancia, clásico vs. ML, coste computacional en el propio ESP32) sobre el accuracy máximo</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="callout">
-        La mayoría de proyectos existentes son herramientas de captura sin evaluación, productos sin metodología
-        publicada, o investigación de ML compleja y difícil de replicar individualmente. Este proyecto ocupa el
-        hueco intermedio: un pipeline completo, transparente y evaluado cuantitativamente.
-      </p>
-    </section>
-
-    <!-- ============ ARQUITECTURA ============ -->
-    <section class="section" id="arquitectura" aria-labelledby="arquitectura-title">
-      <p class="section-eyebrow">§4</p>
-      <h2 id="arquitectura-title" class="section-title">Arquitectura del sistema</h2>
-      <p>
-        Se contemplan dos configuraciones de adquisición alternativas — no simultáneas — con el pipeline de
-        procesamiento posterior compartido:
+        Dos configuraciones posibles, un mismo pipeline de análisis después. <strong>Modo B</strong> (dos ESP32
+        dedicados) es la plataforma principal: control total del tráfico, más fácil de depurar.
+        <strong>Modo A</strong> (router doméstico existente) es una alternativa de menor coste, con una pregunta
+        abierta aún sin resolver — si la regularidad de tramas de un router real basta para un timing estable.
       </p>
       <div class="panel diagram-panel">
         <pre class="mermaid">
 flowchart LR
-    subgraph M1["Modo A: router existente (mínimo hardware)"]
-        R1["Router WiFi existente"]
-        A1["ESP32 único&lt;br/&gt;Modo estación&lt;br/&gt;Hace ping al router"]
-        R1 -.->|señal 2.4 GHz| A1
+    subgraph M1["Modo A: router existente"]
+        R1["Router WiFi"]
+        A1["ESP32 único&lt;br/&gt;modo estación"]
+        R1 -.->|2.4 GHz| A1
     end
-
-    subgraph M2["Modo B: dos ESP32 dedicados (elegido para empezar)"]
-        A2["ESP32 AP&lt;br/&gt;dedicado"]
-        B2["ESP32 STA&lt;br/&gt;Sniffer CSI"]
-        A2 -.->|señal 2.4 GHz| B2
+    subgraph M2["Modo B: dos ESP32 (elegido para empezar)"]
+        A2["ESP32 AP"]
+        B2["ESP32 STA&lt;br/&gt;sniffer CSI"]
+        A2 -.->|2.4 GHz| B2
     end
-
-    A1 --> C["Pipeline Python&lt;br/&gt;analysis/"]
+    A1 --> C["Pipeline Python"]
     B2 --> C
-    C --> D["Extracción de&lt;br/&gt;características"]
-    D --> E["Detector estadístico&lt;br/&gt;baseline"]
-    D --> F["Clasificador ligero&lt;br/&gt;ML (fase 6)"]
-    E --> G["Evaluación cuantitativa&lt;br/&gt;precision/recall/latencia"]
+    C --> D["Características&lt;br/&gt;(PCA, STFT)"]
+    D --> E["Detector&lt;br/&gt;baseline"]
+    D --> F["Clasificador&lt;br/&gt;ML (Fase 6)"]
+    E --> G["Evaluación&lt;br/&gt;cuantitativa"]
     F --> G
         </pre>
       </div>
-      <p>
-        <strong>Modo B (dos ESP32)</strong> es la plataforma experimental primaria: control total sobre el
-        tráfico y el timing, más fácil de depurar. <strong>Modo A (router existente)</strong> es una alternativa
-        de menor coste de hardware, con una pregunta abierta aún sin resolver — si la regularidad de tramas del
-        router doméstico es suficiente para un timing de CSI estable.
-      </p>
+
+      <details class="deep-dive">
+        <summary>Ver el modelo matemático y la evidencia académica</summary>
+        <div class="deep-dive__body">
+          <p>
+            Para la subportadora <span class="eq">\(k\)</span>, la señal OFDM recibida tras la FFT es
+            <span class="eq">\(Y_k(t) = H_k(t)\, X_k(t) + N_k(t)\)</span>, con <span class="eq">\(X_k(t)\)</span>
+            el símbolo piloto conocido. El receptor despeja <span class="eq">\(\hat{H}_k(t) = Y_k(t)/X_k(t)\)</span>
+            — ese valor complejo es el CSI, reportado como amplitud y fase:
+            <span class="eq">\(H_k(t) = |H_k(t)|\, e^{j\angle H_k(t)}\)</span>.
+          </p>
+          <p>
+            El canal multicamino se descompone en una parte estática (paredes, mobiliario) y una dinámica
+            (cuerpos en movimiento):
+          </p>
+          <div class="eq-block">
+            \[ H_k(t) = \underbrace{\sum_{p \,\in\, \text{estático}} a_p\, e^{-j 2\pi f_k \tau_p}}_{H_k^{\text{static}}} \;+\; \underbrace{\sum_{p \,\in\, \text{dinámico}} a_p(t)\, e^{-j 2\pi f_k \tau_p(t)}}_{H_k^{\text{dyn}}(t)} \]
+          </div>
+          <p>
+            La hipótesis del proyecto es <span class="eq">\(H_k^{\text{dyn}}(t)\)</span>: no nula y con varianza
+            medible si hay una persona en movimiento; casi constante si la habitación está vacía. Presencia
+            estática y movimiento activo se distinguen por <em>cuánto</em> varía en el tiempo, no por su
+            presencia o ausencia.
+          </p>
+          <div class="panel figure-panel">
+            <p class="figure-panel__label">Ilustración conceptual (no datos reales)</p>
+            <div class="subcarrier-illustration" role="img" aria-label="Amplitud relativa por subportadora OFDM">
+              <div class="bar" style="--h:38%"></div><div class="bar" style="--h:52%"></div><div class="bar" style="--h:61%"></div>
+              <div class="bar" style="--h:45%"></div><div class="bar" style="--h:70%"></div><div class="bar" style="--h:66%"></div>
+              <div class="bar" style="--h:58%"></div><div class="bar" style="--h:80%"></div><div class="bar" style="--h:74%"></div>
+              <div class="bar" style="--h:63%"></div><div class="bar" style="--h:55%"></div><div class="bar" style="--h:69%"></div>
+            </div>
+            <p class="figure-panel__caption">Amplitud relativa <span class="eq">\(|H_k|\)</span> por subportadora — el patrón real sustituirá esto en la Fase 2.</p>
+          </div>
+          <p>
+            El fenómeno no es una hipótesis sin probar: cinco referencias marcan el terreno, citadas aquí como
+            fundamento conceptual, no como algoritmos replicados (usan hardware — USRP, tarjetas Intel 5300 —
+            muy distinto de un ESP32 de bajo coste):
+          </p>
+          <ul class="ref-list ref-list--compact">
+            <li>Q. Pu, S. Gupta, S. Gollakota, S. Patel, "Whole-home gesture recognition using wireless signals" (<strong>WiSee</strong>), <em>MobiCom '13</em>. <a href="https://doi.org/10.1145/2500423.2500436" target="_blank" rel="noopener">DOI</a></li>
+            <li>Y. Wang <em>et al.</em>, "E-eyes: Device-free location-oriented activity identification using fine-grained Wi-Fi signatures," <em>MobiCom '14</em>, pp. 617–628.</li>
+            <li>W. Wang, A. X. Liu, M. Shahzad, K. Ling, S. Lu, "Understanding and modeling of WiFi signal based human activity recognition" (<strong>CARM</strong>), <em>MobiCom '15</em>. <a href="https://www.sigmobile.org/mobicom/2015/papers/p65-wangA.pdf" target="_blank" rel="noopener">PDF</a></li>
+            <li>S. Yousefi, H. Narui, S. Dayal, S. Ermon, S. Valaee, "A survey on behavior recognition using WiFi channel state information," <em>IEEE Commun. Mag.</em>, 55(10), 2017.</li>
+            <li>Y. Zhang <em>et al.</em>, "Widar3.0: Zero-effort cross-domain gesture recognition with Wi-Fi," <em>IEEE TPAMI</em>, 44(11), 2022.</li>
+          </ul>
+          <p>
+            Las métricas de evaluación (Fase 4) siguen el estándar que fija esa literatura, no una elección
+            propia: precisión <span class="eq">\(P = TP/(TP+FP)\)</span>, recall
+            <span class="eq">\(R = TP/(TP+FN)\)</span>, <span class="eq">\(F_1 = 2PR/(P+R)\)</span>, y una curva
+            ROC (recall vs. tasa de falsos positivos) variando el umbral del detector baseline.
+          </p>
+        </div>
+      </details>
     </section>
 
-    <!-- ============ METODOLOGÍA ============ -->
-    <section class="section" id="metodologia" aria-labelledby="metodologia-title">
-      <p class="section-eyebrow">§5</p>
-      <h2 id="metodologia-title" class="section-title">Metodología</h2>
-
-      <ol class="method-steps">
-        <li>
-          <h3>Protocolo de recolección de datos</h3>
-          <p>
-            Escenarios controlados: habitación vacía, persona quieta, persona en movimiento. Variables barridas
-            sistemáticamente: distancia ESP32–router (1–8 m), tipo de obstáculo (tabique, pared de carga),
-            posición en la habitación. Cada sesión se etiqueta con metadatos estructurados
-            (<code>metadata.json</code>) — sin este etiquetado riguroso no se puede evaluar nada con seriedad
-            después.
-          </p>
-        </li>
-        <li>
-          <h3>Extracción de características</h3>
-          <p>
-            Amplitud y varianza por subportadora en ventana deslizante; PCA para reducir dimensionalidad
-            (decenas de subportadoras → pocas componentes principales, técnica estándar en la literatura de CSI
-            sensing); energía de la señal en banda de movimiento (típicamente &lt;5 Hz tras el PCA) vía STFT.
-          </p>
-        </li>
-        <li>
-          <h3>Detector baseline (clásico, explicable)</h3>
-          <p>
-            Umbral adaptativo sobre la varianza de las componentes principales — simple, interpretable, y sirve
-            de referencia obligatoria: ningún modelo de ML se considera evaluado si no se compara contra este
-            baseline.
-          </p>
-        </li>
-        <li>
-          <h3>Clasificador ligero (SVM / kNN)</h3>
-          <p>
-            Comparación contra el baseline evaluando el trade-off precisión vs. coste computacional, con el
-            objetivo de que pueda correr en el propio ESP32 si el resultado lo justifica — no asumido de
-            antemano.
-          </p>
-        </li>
-        <li>
-          <h3>Evaluación</h3>
-          <p>
-            Matriz de confusión, precisión, recall, F1 por clase; curva ROC para el detector baseline; latencia
-            de detección; degradación de accuracy vs. distancia y tipo de pared — el resultado más parecido en
-            espíritu a una caracterización RF con datos, no solo "funciona / no funciona".
-          </p>
-        </li>
-      </ol>
-
-      <div class="panel metrics-panel">
-        <p class="metrics-panel__label">Métricas objetivo — punto de partida, no una promesa</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Métrica</th><th>Objetivo inicial</th><th>Se revisará tras</th></tr></thead>
+    <!-- ============ INGENIERÍA — split layout, for the engineer audience ============ -->
+    <section class="section section--split" id="ingenieria" aria-labelledby="ingenieria-title">
+      <div class="split__col">
+        <p class="section-eyebrow">Ingeniería</p>
+        <h2 id="ingenieria-title" class="section-title">Decisiones, no solo código</h2>
+        <p>
+          Cada decisión de arquitectura de este proyecto está registrada y justificada — no son
+          preferencias implícitas, son <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/.ai/DECISIONS.md" target="_blank" rel="noopener">ADRs versionadas</a>:
+        </p>
+        <ul class="principle-list">
+          <li><strong>Los datos crudos son inmutables.</strong> Una vez capturada, una sesión no se sobreescribe nunca — solo se procesa hacia adelante.</li>
+          <li><strong>Ningún ML sin comparación contra un baseline clásico.</strong> Un clasificador complejo que no supera a un umbral adaptativo simple no se considera evaluado.</li>
+          <li><strong>Consentimiento por sesión, no genérico.</strong> Cualquier captura con personas exige confirmación explícita en el momento — el propio script de captura lo bloquea si falta.</li>
+          <li><strong>Nada de resultados fabricados.</strong> Si un dato no existe, esta página lo dice — no lo simula ni lo omite.</li>
+        </ul>
+      </div>
+      <div class="split__col">
+        <p class="repo-tree__label">Estructura del repositorio</p>
+        <pre class="repo-tree">wifi-csi-presence-sensing/
+├── firmware/       esp-csi, guía de flasheo
+├── tools/          captura + <em>validador con tests</em>
+├── analysis/       (Fase 2+, aún vacío)
+├── data/raw/       sesiones inmutables
+├── docs/           protocolo, config, esta página
+└── .ai/            estado, decisiones, plan</pre>
+        <div class="table-wrap panel">
+          <table class="lit-table">
+            <thead><tr><th>Alternativa</th><th>Diferenciación</th></tr></thead>
             <tbody>
-              <tr><td>Recall (&lt;4 m, sin obstáculos)</td><td>&gt;90%</td><td>Fase 4</td></tr>
-              <tr><td>Falsos positivos (habitación vacía, 1h)</td><td>&lt;5%</td><td>Fase 4</td></tr>
-              <tr><td>Latencia de detección</td><td>&lt;2s</td><td>Fase 4</td></tr>
-              <tr><td>Recall a través de pared de tabique</td><td>desconocido — pregunta de investigación</td><td>Fase 7</td></tr>
+              <tr><td><a href="https://github.com/espressif/esp-csi" target="_blank" rel="noopener">esp-csi</a></td><td>Framework de captura oficial — se usa como base, no se reinventa</td></tr>
+              <tr><td><a href="https://github.com/francescopace/espectre" target="_blank" rel="noopener">ESPectre</a></td><td>Producto sin métricas publicadas — este proyecto prioriza la evaluación sobre el "úsalo ya"</td></tr>
+              <tr><td><a href="https://github.com/StevenMHernandez/ESP32-CSI-Tool" target="_blank" rel="noopener">ESP32-CSI-Tool</a></td><td>Resuelve solo la captura — este proyecto documenta detector y evaluación</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ============ ÉTICA Y CONSENTIMIENTO ============ -->
-    <section class="section section--callout" id="etica" aria-labelledby="etica-title">
-      <p class="section-eyebrow">§6</p>
-      <h2 id="etica-title" class="section-title">Ética y consentimiento</h2>
-      <div class="panel ethics-panel">
-        <p>
-          Este proyecto es investigación personal de laboratorio, no un producto ni un sistema desplegado. El
-          alcance inicial se centra en presencia/movimiento binario — no en identificación de personas — como
-          decisión de alcance incremental, no como exclusión permanente por motivos de privacidad. Explorar
-          firmas CSI individuales permanece documentado como extensión futura de investigación, gobernada por
-          las siguientes salvaguardas, no descartada por conveniencia:
-        </p>
+    <!-- ============ ESTADO — the honest reality-check moment ============ -->
+    <section class="section" id="estado" aria-labelledby="estado-title">
+      <p class="section-eyebrow">Estado real</p>
+      <h2 id="estado-title" class="section-title">Esto no es una demo terminada</h2>
+      <p>
+        Así es como se ve, sin adornos, un proyecto de investigación en Fase 1 de 9. El panel de abajo se
+        actualiza a mano tras cada sesión de trabajo real — nunca antes.
+      </p>
+      <div class="panel status-panel" aria-labelledby="status-panel-title">
+        <div class="status-panel__header">
+          <h3 id="status-panel-title" class="status-panel__title">Panel de fases</h3>
+          <span class="status-panel__updated">2026-07-06</span>
+        </div>
+        <ol class="status-grid" role="list">
+          <li class="status-led status-led--done"><span class="led" aria-hidden="true"></span><span class="status-led__num">00</span><span class="status-led__label">Preparación del repositorio</span><span class="status-led__tag">completa</span></li>
+          <li class="status-led status-led--active"><span class="led" aria-hidden="true"></span><span class="status-led__num">01</span><span class="status-led__label">Adquisición CSI</span><span class="status-led__tag">bloqueada por hardware</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">02</span><span class="status-led__label">Caracterización de la señal</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">03</span><span class="status-led__label">Generación del dataset</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">04</span><span class="status-led__label">Detección clásica</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">05</span><span class="status-led__label">Ingeniería de características</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">06</span><span class="status-led__label">Machine Learning</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">07</span><span class="status-led__label">Caracterización RF</span><span class="status-led__tag">pendiente</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">08</span><span class="status-led__label">Integración</span><span class="status-led__tag">opcional</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">09</span><span class="status-led__label">Documentación final</span><span class="status-led__tag">pendiente</span></li>
+        </ol>
+      </div>
+      <div class="gap-list">
+        <div class="gap-item"><span class="led led--pending" aria-hidden="true"></span><span>Fotos del montaje real</span><span class="gap-item__phase">Fase 1</span></div>
+        <div class="gap-item"><span class="led led--pending" aria-hidden="true"></span><span>Gráfica de amplitud vs. tiempo</span><span class="gap-item__phase">Fase 2</span></div>
+        <div class="gap-item"><span class="led led--pending" aria-hidden="true"></span><span>Matriz de confusión y ROC</span><span class="gap-item__phase">Fase 4</span></div>
+        <div class="gap-item"><span class="led led--pending" aria-hidden="true"></span><span>Degradación vs. distancia/pared</span><span class="gap-item__phase">Fase 7</span></div>
+      </div>
+      <ul class="stat-inline" aria-label="Datos rápidos">
+        <li><strong>0€*</strong> coste adicional</li>
+        <li><strong>2×</strong> ESP32-WROOM</li>
+        <li><strong>MIT</strong> licencia</li>
+      </ul>
+      <p class="stat-strip__note">* Sujeto a confirmación de si el hardware ya está en mano — ver <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md#hardware" target="_blank" rel="noopener">README → Hardware</a>.</p>
+    </section>
+
+    <!-- ============ LÍMITES Y ÉTICA — merged, split layout ============ -->
+    <section class="section section--split" id="honestidad" aria-labelledby="honestidad-title">
+      <div class="split__col">
+        <p class="section-eyebrow">Límites</p>
+        <h2 id="honestidad-title" class="section-title">Lo que esto no hace (todavía)</h2>
+        <ul class="limits-list">
+          <li>No identifica personas — solo presencia/movimiento binario. Decisión de alcance incremental, no exclusión permanente (ver §Ética).</li>
+          <li>No generaliza entre habitaciones sin recalibrar.</li>
+          <li>Consume batería continuamente — no apto para nodos de bajo consumo sin trabajo adicional.</li>
+          <li>Modo A (router existente) sigue sin validar — pregunta abierta, no asunción.</li>
+        </ul>
+      </div>
+      <div class="split__col">
+        <p class="section-eyebrow">Ética</p>
+        <h2 class="section-title">Cómo se investiga esto</h2>
         <ul class="ethics-list">
-          <li><strong>Consentimiento informado por sesión.</strong> Cualquier captura con participantes requiere
-            consentimiento explícito para esa sesión concreta — nunca un consentimiento general asumido a nivel
-            de proyecto. Se registra en cada <code>metadata.json</code> y se exige a nivel de herramienta.</li>
-          <li><strong>Anonimización.</strong> Los datasets nunca almacenan nombres reales — solo códigos de
-            participante anónimos (p. ej. <code>P01</code>).</li>
-          <li><strong>Sin despliegue fuera del laboratorio.</strong> Ningún dataset o modelo producido está
-            destinado a identificación o seguimiento de personas no consintientes.</li>
-          <li><strong>Revisión explícita de extensiones.</strong> Cualquier fase que apunte específicamente a
-            identificación individual requiere su propia decisión documentada antes de implementarse.</li>
+          <li><strong>Consentimiento por sesión</strong>, exigido por la propia herramienta de captura, no solo por escrito.</li>
+          <li><strong>Códigos anónimos</strong> (<code>P01</code>) — nunca nombres reales en ningún dataset.</li>
+          <li><strong>Sin despliegue fuera del laboratorio.</strong> Ningún modelo aquí está pensado para identificar o seguir a nadie.</li>
+          <li><strong>Extensiones a identificación individual</strong> exigen su propia decisión documentada antes de empezar — el permiso no es implícito.</li>
         </ul>
       </div>
     </section>
 
-    <!-- ============ LIMITACIONES ============ -->
-    <section class="section" id="limitaciones" aria-labelledby="limitaciones-title">
-      <p class="section-eyebrow">§7</p>
-      <h2 id="limitaciones-title" class="section-title">Limitaciones y consideraciones honestas</h2>
-      <ul class="limits-list">
-        <li><strong>Recalibración por entorno:</strong> un modelo entrenado en una habitación no se espera que
-          generalice directamente a otra sin reajuste.</li>
-        <li><strong>Consumo energético:</strong> la captura continua de CSI requiere el radio WiFi activo
-          permanentemente — no apta para nodos de batería de larga duración sin trabajo adicional.</li>
-        <li><strong>Multi-persona:</strong> distinguir cuántas personas hay es sustancialmente más difícil que
-          detectar si hay alguna, y queda fuera del alcance inicial.</li>
-        <li><strong>Modo A sin validar:</strong> la viabilidad de usar un router doméstico existente es, a día
-          de hoy, una pregunta abierta, no una asunción.</li>
-      </ul>
-    </section>
-
-    <!-- ============ ESTADO / ROADMAP ============ -->
-    <section class="section" id="estado" aria-labelledby="estado-title">
-      <p class="section-eyebrow">§8</p>
-      <h2 id="estado-title" class="section-title">Estado actual y próximos pasos</h2>
-      <p>
-        El panel de estado en la cabecera de esta página refleja las diez fases del plan de investigación
-        (<code>.ai/MASTER_PLAN.md</code>). A fecha de publicación:
-      </p>
-      <div class="panel next-steps">
-        <p class="next-steps__label">Próxima tarea (bloqueada por hardware)</p>
-        <ol>
-          <li>Flashear <code>esp-csi</code> en Modo B (dos ESP32 dedicados).</li>
-          <li>Validar salida serie estable, sin corrupción de paquetes.</li>
-          <li>Capturar sesiones etiquetadas (ausente / presente-estático / presente-movimiento) con la
-            herramienta de captura del repositorio.</li>
-          <li>Validar cada sesión estructuralmente antes de confiar en ella.</li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ RECURSOS MULTIMEDIA ============ -->
+    <!-- ============ RECURSOS — compact, no filler sections ============ -->
     <section class="section" id="recursos" aria-labelledby="recursos-title">
-      <p class="section-eyebrow">§9</p>
-      <h2 id="recursos-title" class="section-title">Recursos multimedia</h2>
-      <p>
-        Esta sección se irá completando con material real a medida que exista — nunca con marcadores de
-        posición hechos pasar por resultados. Por ahora, estas son las "ranuras vacías" del instrumento:
-      </p>
-      <div class="media-grid">
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Fotografías del montaje</h3>
-          <p>Disposición física de los ESP32, distancias y entorno de prueba.</p>
-          <span class="media-slot__phase">Produce: Fase 1</span>
-        </div>
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Capturas de consola serie</h3>
-          <p>Evidencia de tramas CSI reales llegando de forma estable.</p>
-          <span class="media-slot__phase">Produce: Fase 1</span>
-        </div>
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Gráficas de amplitud vs. tiempo</h3>
-          <p>Primera visualización real de la señal CSI capturada.</p>
-          <span class="media-slot__phase">Produce: Fase 2</span>
-        </div>
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Matriz de confusión y curva ROC</h3>
-          <p>Evaluación cuantitativa del detector baseline.</p>
-          <span class="media-slot__phase">Produce: Fase 4</span>
-        </div>
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Degradación vs. distancia y pared</h3>
-          <p>Caracterización sistemática del alcance real del sistema.</p>
-          <span class="media-slot__phase">Produce: Fase 7</span>
-        </div>
-        <div class="media-slot">
-          <span class="led led--pending" aria-hidden="true"></span>
-          <h3>Vídeo demostrativo</h3>
-          <p>Demostración end-to-end del sistema funcionando, si Fase 8 se completa.</p>
-          <span class="media-slot__phase">Produce: Fase 8 (opcional)</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ GLOSARIO ============ -->
-    <section class="section" id="glosario" aria-labelledby="glosario-title">
-      <p class="section-eyebrow">§10</p>
-      <h2 id="glosario-title" class="section-title">Glosario</h2>
-      <div class="table-wrap panel">
-        <table>
-          <thead><tr><th>Término</th><th>Significado en este proyecto</th></tr></thead>
-          <tbody>
-            <tr><td><strong>CSI</strong> (Channel State Information)</td><td>Estimación por subportadora de cómo el canal WiFi afecta a la señal (amplitud y fase), calculada por el receptor para poder demodular correctamente.</td></tr>
-            <tr><td><strong>OFDM</strong></td><td>Modulación multiportadora usada por 802.11n/ac: la señal se divide en decenas de subportadoras ortogonales transmitidas simultáneamente.</td></tr>
-            <tr><td><strong>Subportadora</strong></td><td>Cada una de las frecuencias individuales dentro de un símbolo OFDM; el CSI se estima de forma independiente para cada una.</td></tr>
-            <tr><td><strong>Multicamino (multipath)</strong></td><td>Fenómeno por el cual una señal de radio llega al receptor por varias trayectorias reflejadas, que interfieren entre sí. Un cuerpo humano en movimiento altera estas trayectorias de forma medible.</td></tr>
-            <tr><td><strong>PCA</strong> (Análisis de Componentes Principales)</td><td>Técnica de reducción de dimensionalidad usada para pasar de decenas de subportadoras a unas pocas componentes que capturan la mayor parte de la varianza.</td></tr>
-            <tr><td><strong>STFT</strong> (Short-Time Fourier Transform)</td><td>Transformada de Fourier aplicada en ventanas deslizantes, usada aquí para estimar energía de la señal en banda de movimiento a lo largo del tiempo.</td></tr>
-            <tr><td><strong>Modo A / Modo B</strong></td><td>Las dos configuraciones de adquisición contempladas: Modo A usa el router doméstico existente; Modo B usa dos ESP32 dedicados (AP + STA). Ver §4, Arquitectura.</td></tr>
-            <tr><td><strong>Detector baseline</strong></td><td>Detector clásico y explicable (umbral adaptativo sobre varianza) contra el que se compara obligatoriamente cualquier clasificador de ML — nunca se evalúa un modelo complejo en aislamiento.</td></tr>
-            <tr><td><strong>Sesión (session)</strong></td><td>Una captura etiquetada e inmutable, con su propio <code>metadata.json</code>, según el formato de <code>docs/acquisition_protocol.md</code>.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ============ CÓMO CITAR ============ -->
-    <section class="section" id="citar" aria-labelledby="citar-title">
-      <p class="section-eyebrow">§11</p>
-      <h2 id="citar-title" class="section-title">Cómo citar este proyecto</h2>
-      <p>
-        Este no es un trabajo publicado en una revista o congreso — es un proyecto de portfolio personal en
-        desarrollo activo. Aun así, si resulta útil como referencia (por ejemplo, en otro proyecto de
-        estudiante o en una revisión de herramientas de CSI sensing), esta es la forma sugerida de citarlo:
-      </p>
-      <div class="panel cite-box">
-        <pre><code>Guijarro (AlvGJ-UGR). "Sensado de presencia mediante WiFi CSI: detección de
-presencia y movimiento humano a través de paredes sin cámara." Proyecto de
-investigación aplicada, Ingeniería de Telecomunicaciones, 2026.
-Repositorio: https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing</code></pre>
-      </div>
-      <p class="cite-note">
-        Como el proyecto sigue en desarrollo, cualquier cita a resultados concretos debería referenciar el
-        commit o la fecha exacta consultada — los números y conclusiones de las fases aún no completadas
-        (ver panel de estado, arriba) cambiarán a medida que existan datos reales.
-      </p>
-    </section>
-
-    <!-- ============ REFERENCIAS ============ -->
-    <section class="section" id="referencias" aria-labelledby="referencias-title">
-      <p class="section-eyebrow">§12</p>
-      <h2 id="referencias-title" class="section-title">Referencias y trabajo relacionado</h2>
-      <ul class="ref-list">
-        <li>Espressif — <a href="https://github.com/espressif/esp-csi" target="_blank" rel="noopener">esp-csi</a> (framework y ejemplos oficiales)</li>
-        <li>Francesco Pace — <a href="https://github.com/francescopace/espectre" target="_blank" rel="noopener">ESPectre</a> (integración Home Assistant)</li>
-        <li>Steven M. Hernandez — <a href="https://github.com/StevenMHernandez/ESP32-CSI-Tool" target="_blank" rel="noopener">ESP32-CSI-Tool</a> (toolkit de captura académico)</li>
-        <li><a href="https://wrlab.github.io/Wi-ESP/" target="_blank" rel="noopener">Wi-ESP / Wi-SafeHome</a> (revisión de literatura de CSI sensing)</li>
-        <li>ruvnet — <a href="https://github.com/ruvnet/RuView" target="_blank" rel="noopener">RuView / WiFi DensePose</a> (pose estimation vía CSI)</li>
-      </ul>
-    </section>
-
-    <!-- ============ DOCUMENTACIÓN DEL REPOSITORIO ============ -->
-    <section class="section" id="documentacion" aria-labelledby="documentacion-title">
-      <p class="section-eyebrow">§13</p>
-      <h2 id="documentacion-title" class="section-title">Documentación técnica completa</h2>
-      <p>Esta página es una síntesis narrativa. La documentación técnica exhaustiva vive en el repositorio:</p>
+      <p class="section-eyebrow">Seguir explorando</p>
+      <h2 id="recursos-title" class="section-title">Documentación completa</h2>
       <div class="doc-links">
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md" target="_blank" rel="noopener">
-          <span class="doc-link__title">README.md</span><span class="doc-link__desc">Documentación principal del proyecto</span>
+          <span class="doc-link__title">README.md</span><span class="doc-link__desc">Documentación principal</span>
         </a>
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/firmware/README.md" target="_blank" rel="noopener">
           <span class="doc-link__title">firmware/README.md</span><span class="doc-link__desc">Guía de flasheo de esp-csi</span>
         </a>
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/acquisition_protocol.md" target="_blank" rel="noopener">
-          <span class="doc-link__title">docs/acquisition_protocol.md</span><span class="doc-link__desc">Formato de sesión y esquema de metadatos</span>
+          <span class="doc-link__title">acquisition_protocol.md</span><span class="doc-link__desc">Formato de sesión y metadatos</span>
         </a>
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/hardware_configuration.md" target="_blank" rel="noopener">
-          <span class="doc-link__title">docs/hardware_configuration.md</span><span class="doc-link__desc">Configuración de hardware y checklist</span>
+          <span class="doc-link__title">hardware_configuration.md</span><span class="doc-link__desc">Configuración y checklist</span>
         </a>
         <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/tools/README.md" target="_blank" rel="noopener">
-          <span class="doc-link__title">tools/README.md</span><span class="doc-link__desc">Herramientas de captura y validación</span>
+          <span class="doc-link__title">tools/README.md</span><span class="doc-link__desc">Captura y validación</span>
         </a>
       </div>
+      <p class="cite-note">
+        ¿Citando este trabajo? No es una publicación formal — cita por commit o fecha, ya que los resultados
+        cambiarán en cuanto existan datos reales. Formato sugerido en el propio README.
+      </p>
     </section>
 
   </div>
@@ -634,7 +348,7 @@ Repositorio: https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing</code></pre>
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-<script src="assets/js/main.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script defer src="assets/js/main.js"></script>
 </body>
 </html>
