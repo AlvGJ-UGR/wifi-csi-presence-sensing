@@ -1,6 +1,20 @@
 (function () {
   "use strict";
 
+  // Render KaTeX math (system-model equations in §2.1, formal metrics in §5).
+  // Delimiters: \( \) for inline, \[ \] for display blocks -- matches what's
+  // written in docs/index.html. Guarded in case the CDN script fails to load
+  // (e.g. offline preview) so the rest of the page still works.
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false }
+      ],
+      throwOnError: false
+    });
+  }
+
   // Mobile nav toggle
   var navToggle = document.getElementById("navToggle");
   var navList = document.getElementById("navList");
@@ -40,7 +54,7 @@
   // Scroll-reveal for section panels (skipped entirely if reduced motion is preferred)
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!prefersReducedMotion && "IntersectionObserver" in window) {
-    var revealTargets = document.querySelectorAll(".section .panel, .method-steps li, .media-slot, .limits-list li");
+    var revealTargets = document.querySelectorAll(".section .panel, .intuition__step, .principle-list li, .limits-list li, .gap-item, .deep-dive");
     revealTargets.forEach(function (el) { el.classList.add("reveal"); });
 
     var observer = new IntersectionObserver(
