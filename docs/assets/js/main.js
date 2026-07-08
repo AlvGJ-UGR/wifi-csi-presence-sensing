@@ -31,26 +31,6 @@
     });
   }
 
-  // Mermaid diagram init (dark theme matched to the instrument-panel palette)
-  if (window.mermaid) {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: "base",
-      themeVariables: {
-        background: "#1B232C",
-        primaryColor: "#1B232C",
-        primaryTextColor: "#E8E6DE",
-        primaryBorderColor: "#4FD1C5",
-        lineColor: "#4FD1C5",
-        secondaryColor: "#12181F",
-        tertiaryColor: "#12181F",
-        fontFamily: "IBM Plex Mono, monospace",
-        clusterBkg: "#12181F",
-        clusterBorder: "#2A3440"
-      }
-    });
-  }
-
   // Scroll-reveal for section panels (skipped entirely if reduced motion is preferred)
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!prefersReducedMotion && "IntersectionObserver" in window) {
@@ -112,5 +92,33 @@
     };
     window.addEventListener("scroll", toggleBackToTop, { passive: true });
     toggleBackToTop();
+  }
+
+  // 3D cursor-tilt: subtle perspective tilt on panels/pipeline stages/status pill,
+  // following the pointer. Skipped on touch devices (no meaningful hover) and
+  // when reduced motion is preferred.
+  var supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (!prefersReducedMotion && supportsHover) {
+    var tiltTargets = document.querySelectorAll(".panel, .dsp-stage, .hero__status-pill");
+    var maxTilt = 6; // degrees
+
+    tiltTargets.forEach(function (el) {
+      el.addEventListener("mouseenter", function () {
+        el.classList.add("tilt-active");
+      });
+      el.addEventListener("mousemove", function (e) {
+        var rect = el.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width;
+        var py = (e.clientY - rect.top) / rect.height;
+        var rotateY = (px - 0.5) * (maxTilt * 2);
+        var rotateX = (0.5 - py) * (maxTilt * 2);
+        el.style.transform =
+          "perspective(700px) rotateX(" + rotateX.toFixed(2) + "deg) rotateY(" + rotateY.toFixed(2) + "deg) translateZ(2px)";
+      });
+      el.addEventListener("mouseleave", function () {
+        el.classList.remove("tilt-active");
+        el.style.transform = "perspective(700px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+      });
+    });
   }
 })();
