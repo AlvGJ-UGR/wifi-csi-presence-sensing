@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WiFi CSI Presence Sensing — tu router ya sabe si hay alguien en casa</title>
+<meta name="description" content="Un proyecto de investigación aplicada que convierte las distorsiones que un cuerpo humano provoca en la señal WiFi en un sensor de presencia, usando dos ESP32 de bajo coste.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230A0D10'/%3E%3Crect x='6' y='6' width='20' height='20' rx='2' fill='none' stroke='%23E0A857' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%234FC3E8'/%3E%3C/svg%3E">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="WiFi CSI Presence Sensing">
+<meta property="og:description" content="Detección de presencia humana a través de paredes usando WiFi Channel State Information sobre ESP32, sin cámara.">
+<meta property="og:url" content="https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/">
+<meta property="og:site_name" content="WiFi CSI Presence Sensing">
+<meta property="og:image" content="https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/assets/og/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WiFi CSI Presence Sensing">
+<meta name="twitter:description" content="Un router WiFi ya sabe si hay alguien en la habitación. Este proyecto mide esa señal.">
+<meta name="twitter:image" content="https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/assets/og/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ResearchProject",
+  "name": "Sensado de presencia mediante WiFi CSI",
+  "description": "Investigación aplicada en detección de presencia y movimiento humano mediante WiFi Channel State Information (CSI) capturado con ESP32, sin cámaras ni micrófonos.",
+  "url": "https://AlvGJ-UGR.github.io/wifi-csi-presence-sensing/",
+  "codeRepository": "https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing",
+  "license": "https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/LICENSE",
+  "keywords": ["WiFi CSI", "Channel State Information", "ESP32", "sensado RF", "presencia humana", "802.11", "OFDM"]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="topbar__mark" href="#top" aria-label="Inicio">
+      <span class="mark-glyph" aria-hidden="true">◱</span>
+      <span class="mark-text">CSI<span class="mark-text--dim">·SENSE</span></span>
+    </a>
+    <nav class="topbar__nav" aria-label="Navegación principal">
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-list" id="navList">
+        <li><a href="#funciona">Cómo funciona</a></li>
+        <li><a href="#ingenieria">Ingeniería</a></li>
+        <li><a href="#estado">Estado</a></li>
+        <li><a href="#honestidad">Límites</a></li>
+        <li><a href="#recursos">Recursos</a></li>
+        <li><a class="nav-list__cta" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing" target="_blank" rel="noopener">Repositorio ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="contenido">
+
+  <!-- ============ HERO — one claim, one visual, nothing else ============ -->
+  <section class="hero" id="top">
+    <svg class="hero__wave-bg" viewBox="0 0 960 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g class="wifi-ping" transform="translate(140,340)">
+        <circle r="30" class="ping-ring ping-ring--1"/>
+        <circle r="30" class="ping-ring ping-ring--2"/>
+        <circle r="30" class="ping-ring ping-ring--3"/>
+        <circle r="4" fill="var(--cyan)"/>
+      </g>
+      <g class="wifi-ping wifi-ping--alt" transform="translate(820,60)">
+        <circle r="24" class="ping-ring ping-ring--1"/>
+        <circle r="24" class="ping-ring ping-ring--2"/>
+        <circle r="24" class="ping-ring ping-ring--3"/>
+        <circle r="3.5" fill="var(--amber)"/>
+      </g>
+      <path id="txrx-path" class="txrx-line" d="M 140,340 C 380,220 580,220 820,60" fill="none"/>
+      <circle r="3.5" class="txrx-packet" fill="var(--cyan)">
+        <animateMotion dur="4.5s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#txrx-path"/>
+        </animateMotion>
+      </circle>
+    </svg>
+    <p class="eyebrow">Investigación aplicada · ESP32 · WiFi CSI</p>
+    <h1 class="hero__title">Tu WiFi ya sabe si<br>hay alguien en la habitación.</h1>
+    <p class="hero__lede">
+      Este proyecto mide las distorsiones que un cuerpo humano provoca en la señal WiFi que ya
+      existe en el aire, y las convierte en un sensor de presencia, sin cámara, con dos placas
+      ESP32 de bajo coste.
+    </p>
+    <a class="hero__status-pill" href="#estado">
+      <span class="led led--active" aria-hidden="true"></span>
+      Fase 1 de 9 · captura bloqueada por hardware — ver estado real ↓
+    </a>
+  </section>
+
+  <!-- ============ EN UN MINUTO — visual intuition, near-zero jargon ============ -->
+  <section class="intuition" id="intuicion" aria-label="Cómo funciona, en tres pasos">
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Esquema de propagación multitrayecto: rayo directo y rayos reflejados estáticos entre TX y RX">
+        <rect x="8" y="52" width="10" height="10" fill="none" stroke="var(--cyan)" stroke-width="1.5"/>
+        <rect x="102" y="52" width="10" height="10" fill="none" stroke="var(--cyan)" stroke-width="1.5"/>
+        <text x="13" y="76" fill="var(--text-faint)" font-size="8" font-family="monospace" text-anchor="middle">TX</text>
+        <text x="107" y="76" fill="var(--text-faint)" font-size="8" font-family="monospace" text-anchor="middle">RX</text>
+        <line x1="18" y1="57" x2="102" y2="57" stroke="var(--text-faint)" stroke-width="1.5"/>
+        <path d="M 18 57 L 60 14 L 102 57" fill="none" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <path d="M 18 57 L 46 100 L 102 57" fill="none" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <path d="M 18 60 L 66 92 L 102 60" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 2"/>
+        <circle cx="66" cy="92" r="3.5" fill="var(--amber)"/>
+      </svg>
+      <p class="intuition__caption"><strong>El aire ya está lleno de WiFi.</strong> La señal llega por varias trayectorias reflejadas, la haya pedido alguien o no.</p>
+    </div>
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Zona de Fresnel distorsionada por un obstáculo dinámico entre emisor y receptor">
+        <line x1="10" y1="60" x2="110" y2="60" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="2 3"/>
+        <g stroke="var(--text-faint)" stroke-width="1">
+          <line x1="10" y1="57" x2="10" y2="63"/><line x1="35" y1="58" x2="35" y2="62"/>
+          <line x1="60" y1="57" x2="60" y2="63"/><line x1="85" y1="58" x2="85" y2="62"/>
+          <line x1="110" y1="57" x2="110" y2="63"/>
+        </g>
+        <ellipse cx="60" cy="60" rx="48" ry="20" fill="none" stroke="var(--cyan)" stroke-width="1.5"/>
+        <circle cx="70" cy="46" r="7" fill="var(--bg)" stroke="var(--text)" stroke-width="2"/>
+        <path d="M 12 60 Q 40 30 62 40" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+        <path d="M 78 40 Q 95 32 108 60" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+        <path d="M 20 72 Q 45 88 70 78 Q 90 70 100 76" fill="none" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
+      </svg>
+      <p class="intuition__caption"><strong>Tu cuerpo la dobla.</strong> Un obstáculo dentro de la zona de Fresnel cambia la fase y amplitud de forma medible.</p>
+    </div>
+    <div class="intuition__step">
+      <svg class="intuition__svg" viewBox="0 0 120 120" role="img" aria-label="Diagrama de constelación I/Q con jitter de fase alrededor de los puntos ideales">
+        <line x1="60" y1="12" x2="60" y2="108" stroke="var(--text-faint)" stroke-width="1"/>
+        <line x1="12" y1="60" x2="108" y2="60" stroke="var(--text-faint)" stroke-width="1"/>
+        <text x="100" y="56" fill="var(--text-faint)" font-size="8" font-family="monospace">I</text>
+        <text x="64" y="20" fill="var(--text-faint)" font-size="8" font-family="monospace">Q</text>
+        <g fill="none" stroke="var(--cyan)" stroke-width="1.2">
+          <circle cx="84" cy="36" r="4"/><circle cx="36" cy="36" r="4"/>
+          <circle cx="84" cy="84" r="4"/><circle cx="36" cy="84" r="4"/>
+        </g>
+        <g fill="var(--amber)">
+          <circle cx="86" cy="33" r="1.6"/><circle cx="81" cy="39" r="1.6"/><circle cx="88" cy="40" r="1.6"/>
+          <circle cx="33" cy="34" r="1.6"/><circle cx="39" cy="38" r="1.6"/><circle cx="32" cy="40" r="1.6"/>
+          <circle cx="87" cy="87" r="1.6"/><circle cx="81" cy="82" r="1.6"/><circle cx="88" cy="80" r="1.6"/>
+          <circle cx="33" cy="86" r="1.6"/><circle cx="39" cy="81" r="1.6"/><circle cx="34" cy="79" r="1.6"/>
+        </g>
+      </svg>
+      <p class="intuition__caption"><strong>Un ESP32 de 3€ lo mide.</strong> El chip expone el CSI en crudo: el jitter de fase alrededor de cada símbolo ya delata el canal cambiando.</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+
+    <!-- ============ CÓMO FUNCIONA — pipeline first, math optional ============ -->
+    <section class="section" id="funciona" aria-labelledby="funciona-title">
+      <p class="section-eyebrow">Cómo funciona</p>
+      <h2 id="funciona-title" class="section-title">De la antena al detector</h2>
+      <p>
+        Dos configuraciones posibles, un mismo pipeline de análisis después. <strong>Modo B</strong> (dos ESP32
+        dedicados) es la plataforma principal: control total del tráfico, más fácil de depurar.
+        <strong>Modo A</strong> (router doméstico existente) es una alternativa de menor coste, con una pregunta
+        abierta: si la regularidad de tramas de un router real basta para un timing estable.
+      </p>
+      <div class="panel pipeline-panel">
+        <div class="dsp-pipeline">
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">01</span>
+            <span class="dsp-stage__label">RF Frontend</span>
+            <span class="dsp-stage__sub">Modo A · Modo B</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">02</span>
+            <span class="dsp-stage__label">Frame Capture</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">03</span>
+            <span class="dsp-stage__label">H<sub>k</sub> Extraction</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">04</span>
+            <span class="dsp-stage__label">Noise Filtering</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">05</span>
+            <span class="dsp-stage__label">Windowing / STFT</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage">
+            <span class="dsp-stage__idx">06</span>
+            <span class="dsp-stage__label">Feature Extraction</span>
+          </div>
+          <span class="dsp-arrow" aria-hidden="true">→</span>
+          <div class="dsp-stage dsp-stage--output">
+            <span class="dsp-stage__idx">07</span>
+            <span class="dsp-stage__label">Adaptive Threshold</span>
+          </div>
+        </div>
+      </div>
+
+      <details class="deep-dive">
+        <summary>Ver el modelo matemático y la evidencia académica</summary>
+        <div class="deep-dive__body">
+          <p>
+            Para la subportadora <span class="eq">\(k\)</span>, la señal OFDM recibida tras la FFT es
+            <span class="eq">\(Y_k(t) = H_k(t)\, X_k(t) + N_k(t)\)</span>, con <span class="eq">\(X_k(t)\)</span>
+            el símbolo piloto conocido. El receptor despeja <span class="eq">\(\hat{H}_k(t) = Y_k(t)/X_k(t)\)</span>,
+            ese valor complejo es el CSI, reportado como amplitud y fase:
+            <span class="eq">\(H_k(t) = |H_k(t)|\, e^{j\angle H_k(t)}\)</span>.
+          </p>
+          <p>
+            El canal multicamino se descompone en una parte estática (paredes, mobiliario) y una dinámica
+            (cuerpos en movimiento):
+          </p>
+          <div class="eq-block">
+            \[ H_k(t) = \underbrace{\sum_{p \,\in\, \text{estático}} a_p\, e^{-j 2\pi f_k \tau_p}}_{H_k^{\text{static}}} \;+\; \underbrace{\sum_{p \,\in\, \text{dinámico}} a_p(t)\, e^{-j 2\pi f_k \tau_p(t)}}_{H_k^{\text{dyn}}(t)} \]
+          </div>
+          <svg class="multipath-svg" viewBox="0 0 300 90" role="img" aria-label="Trayectorias estáticas frente a una trayectoria dinámica reflejada en una persona en movimiento">
+            <rect x="6" y="10" width="14" height="70" fill="none" stroke="var(--text-faint)" stroke-width="1.5"/>
+            <rect x="280" y="10" width="14" height="70" fill="none" stroke="var(--text-faint)" stroke-width="1.5"/>
+            <line x1="20" y1="20" x2="280" y2="20" stroke="var(--text-faint)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <line x1="20" y1="70" x2="280" y2="70" stroke="var(--text-faint)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <path d="M 20 45 Q 150 30 195 45" fill="none" stroke="var(--amber)" stroke-width="2" class="signal-pulse"/>
+            <circle cx="200" cy="46" r="7" fill="none" stroke="var(--text)" stroke-width="2"/>
+            <path d="M 205 46 Q 240 60 280 45" fill="none" stroke="var(--amber)" stroke-width="2" class="signal-pulse"/>
+          </svg>
+          <p class="multipath-caption">Cada línea discontinua es una trayectoria reflejada que no cambia; la línea ámbar sí, porque cruza la persona.</p>
+          <p>
+            La hipótesis del proyecto es <span class="eq">\(H_k^{\text{dyn}}(t)\)</span>: no nula y con varianza
+            medible si hay una persona en movimiento; casi constante si la habitación está vacía. Presencia
+            estática y movimiento activo se distinguen por <em>cuánto</em> varía en el tiempo, no por su
+            presencia o ausencia.
+          </p>
+          <div class="panel figure-panel">
+            <p class="figure-panel__label">Simulación — no datos reales</p>
+            <svg class="ofdm-chart" viewBox="0 0 640 220" role="img" aria-label="Respuesta en frecuencia simulada de un canal OFDM de 64 subportadoras, 802.11n, con un nulo de desvanecimiento multitrayecto">
+              <g stroke="var(--panel-border)" stroke-width="1">
+                <line x1="46" y1="14" x2="46" y2="190"/>
+                <line x1="46" y1="190" x2="626" y2="190"/>
+              </g>
+              <g stroke="var(--panel-border)" stroke-width="1" stroke-dasharray="2 3">
+                <line x1="46" y1="14.0" x2="626" y2="14.0"/>
+                <line x1="46" y1="43.3" x2="626" y2="43.3"/>
+                <line x1="46" y1="72.7" x2="626" y2="72.7"/>
+                <line x1="46" y1="102.0" x2="626" y2="102.0"/>
+                <line x1="46" y1="131.3" x2="626" y2="131.3"/>
+                <line x1="46" y1="160.7" x2="626" y2="160.7"/>
+                <line x1="119.7" y1="14" x2="119.7" y2="190"/>
+                <line x1="193.3" y1="14" x2="193.3" y2="190"/>
+                <line x1="267.0" y1="14" x2="267.0" y2="190"/>
+                <line x1="340.6" y1="14" x2="340.6" y2="190"/>
+                <line x1="414.3" y1="14" x2="414.3" y2="190"/>
+                <line x1="487.9" y1="14" x2="487.9" y2="190"/>
+                <line x1="561.6" y1="14" x2="561.6" y2="190"/>
+              </g>
+              <g fill="var(--text-faint)" font-size="9" font-family="monospace">
+                <text x="4" y="18">0</text>
+                <text x="4" y="47">-5</text>
+                <text x="0" y="76">-10</text>
+                <text x="0" y="106">-15</text>
+                <text x="0" y="135">-20</text>
+                <text x="0" y="164">-25</text>
+                <text x="42" y="204">0</text>
+                <text x="181" y="204">16</text>
+                <text x="328" y="204">32</text>
+                <text x="475" y="204">48</text>
+                <text x="604" y="204">63</text>
+                <text x="330" y="216" text-anchor="middle">Índice de subportadora (k)</text>
+              </g>
+              <text x="16" y="100" fill="var(--text-faint)" font-size="9" font-family="monospace" transform="rotate(-90 16 100)" text-anchor="middle">Amplitud |H_k| (dB)</text>
+              <polyline points="46.0,60.8 55.2,46.5 64.4,31.2 73.6,26.4 82.8,25.4 92.0,22.5 101.2,18.4 110.4,17.3 119.7,21.8 128.9,30.9 138.1,40.6 147.3,46.4 156.5,46.3 165.7,42.2 174.9,38.2 184.1,37.2 193.3,39.1 202.5,40.4 211.7,37.8 220.9,30.3 230.1,20.9 239.3,14.2 248.5,13.4 257.7,18.4 267.0,25.2 276.2,29.9 285.4,30.8 294.6,29.6 303.8,30.2 313.0,34.8 322.2,42.5 331.4,49.2 340.6,50.9 349.8,47.1 359.0,41.8 368.2,42.7 377.4,56.9 386.6,86.5 395.8,124.2 405.0,154.7 414.3,162.7 423.5,144.6 432.7,110.9 441.9,78.6 451.1,58.5 460.3,50.3 469.5,47.6 478.7,44.7 487.9,40.8 497.1,38.2 506.3,39.1 515.5,42.3 524.7,44.4 533.9,41.7 543.1,33.8 552.3,23.9 561.6,16.5 570.8,15.0 580.0,18.7 589.2,24.2 598.4,28.6 607.6,35.5 616.8,50.0 626.0,61.3"
+                fill="none" stroke="var(--cyan)" stroke-width="2"/>
+              <circle cx="414.3" cy="162.7" r="4" fill="var(--amber)"/>
+              <text x="422" y="150" fill="var(--amber)" font-size="9" font-family="monospace">nulo multitrayecto</text>
+            </svg>
+            <p class="figure-panel__caption">|H<sub>k</sub>| simulado — 64 subportadoras, 802.11n.</p>
+          </div>
+          <p>
+            El fenómeno no es una hipótesis sin probar: cinco referencias marcan el terreno, citadas aquí como
+            fundamento conceptual, no como algoritmos replicados (usan hardware muy distinto: USRP, tarjetas Intel 5300, no un ESP32 de bajo coste):
+          </p>
+          <ul class="ref-list ref-list--compact">
+            <li>Q. Pu, S. Gupta, S. Gollakota, S. Patel, "Whole-home gesture recognition using wireless signals" (<strong>WiSee</strong>), <em>MobiCom '13</em>. <a href="https://doi.org/10.1145/2500423.2500436" target="_blank" rel="noopener">DOI</a></li>
+            <li>Y. Wang <em>et al.</em>, "E-eyes: Device-free location-oriented activity identification using fine-grained Wi-Fi signatures," <em>MobiCom '14</em>, pp. 617–628.</li>
+            <li>W. Wang, A. X. Liu, M. Shahzad, K. Ling, S. Lu, "Understanding and modeling of WiFi signal based human activity recognition" (<strong>CARM</strong>), <em>MobiCom '15</em>. <a href="https://www.sigmobile.org/mobicom/2015/papers/p65-wangA.pdf" target="_blank" rel="noopener">PDF</a></li>
+            <li>S. Yousefi, H. Narui, S. Dayal, S. Ermon, S. Valaee, "A survey on behavior recognition using WiFi channel state information," <em>IEEE Commun. Mag.</em>, 55(10), 2017.</li>
+            <li>Y. Zhang <em>et al.</em>, "Widar3.0: Zero-effort cross-domain gesture recognition with Wi-Fi," <em>IEEE TPAMI</em>, 44(11), 2022.</li>
+          </ul>
+          <p>
+            Las métricas de evaluación (Fase 4) siguen el estándar que fija esa literatura, no una elección
+            propia: precisión <span class="eq">\(P = TP/(TP+FP)\)</span>, recall
+            <span class="eq">\(R = TP/(TP+FN)\)</span>, <span class="eq">\(F_1 = 2PR/(P+R)\)</span>, y una curva
+            ROC (recall vs. tasa de falsos positivos) variando el umbral del detector baseline.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ INGENIERÍA — split layout, for the engineer audience ============ -->
+    <section class="section section--split" id="ingenieria" aria-labelledby="ingenieria-title">
+      <div class="split__col">
+        <p class="section-eyebrow">Ingeniería</p>
+        <h2 id="ingenieria-title" class="section-title">Decisiones, no solo código</h2>
+        <p>
+          Cada decisión de arquitectura de este proyecto está registrada y justificada: no son
+          preferencias implícitas, son <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/.ai/DECISIONS.md" target="_blank" rel="noopener">ADRs versionadas</a>:
+        </p>
+        <ul class="principle-list">
+          <li><strong>Los datos crudos son inmutables.</strong> Una vez capturada, una sesión no se sobreescribe nunca; solo se procesa hacia adelante.</li>
+          <li><strong>Ningún ML sin comparación contra un baseline clásico.</strong> Un clasificador complejo que no supera a un umbral adaptativo simple no se considera evaluado.</li>
+          <li><strong>Consentimiento por sesión, no genérico.</strong> Cualquier captura con personas exige confirmación explícita en el momento: el propio script de captura lo bloquea si falta.</li>
+          <li><strong>Nada de resultados fabricados.</strong> Si un dato no existe, esta página lo dice; no lo simula ni lo omite.</li>
+        </ul>
+      </div>
+      <div class="split__col">
+        <p class="repo-tree__label">Estructura del repositorio</p>
+        <pre class="repo-tree">wifi-csi-presence-sensing/
+├── firmware/       esp-csi, guía de flasheo
+├── tools/          captura + <em>validador con tests</em>
+├── analysis/       (Fase 2+, aún vacío)
+├── data/raw/       sesiones inmutables
+├── docs/           protocolo, config, esta página
+└── .ai/            estado, decisiones, plan</pre>
+        <div class="table-wrap panel">
+          <table class="lit-table">
+            <thead><tr><th>Alternativa</th><th>Diferenciación</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://github.com/espressif/esp-csi" target="_blank" rel="noopener">esp-csi</a></td><td>Framework de captura oficial; se usa como base, no se reinventa</td></tr>
+              <tr><td><a href="https://github.com/francescopace/espectre" target="_blank" rel="noopener">ESPectre</a></td><td>Producto sin métricas publicadas: este proyecto prioriza la evaluación sobre el "úsalo ya"</td></tr>
+              <tr><td><a href="https://github.com/StevenMHernandez/ESP32-CSI-Tool" target="_blank" rel="noopener">ESP32-CSI-Tool</a></td><td>Resuelve solo la captura; este proyecto documenta detector y evaluación</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ESTADO — the honest reality-check moment ============ -->
+    <section class="section" id="estado" aria-labelledby="estado-title">
+      <p class="section-eyebrow">Estado real</p>
+      <h2 id="estado-title" class="section-title">Esto no es una demo terminada</h2>
+      <p>
+        Así es como se ve, sin adornos, un proyecto de investigación en Fase 1 de 9. El panel de abajo se
+        actualiza a mano tras cada sesión de trabajo real, nunca antes.
+      </p>
+      <div class="panel status-panel" aria-labelledby="status-panel-title">
+        <div class="status-panel__header">
+          <h3 id="status-panel-title" class="status-panel__title">Panel de fases</h3>
+          <span class="status-panel__updated">2026-07-06</span>
+        </div>
+        <ol class="status-grid" role="list">
+          <li class="status-led status-led--done"><span class="led" aria-hidden="true"></span><span class="status-led__num">00</span><span class="status-led__label">Preparación del repositorio</span><span class="status-led__tag">completa</span></li>
+          <li class="status-led status-led--active"><span class="led" aria-hidden="true"></span><span class="status-led__num">01</span><span class="status-led__label">Adquisición CSI</span><span class="status-led__tag">bloqueada por hardware</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">02</span><span class="status-led__label">Caracterización de la señal</span><span class="status-led__tag">STFT & Spectrogram</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">03</span><span class="status-led__label">Generación del dataset</span><span class="status-led__tag">Sesiones etiquetadas + metadata.json</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">04</span><span class="status-led__label">Detección clásica</span><span class="status-led__tag">Umbral adaptativo · ROC/AUC</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">05</span><span class="status-led__label">Ingeniería de características</span><span class="status-led__tag">PCA sobre subportadoras</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">06</span><span class="status-led__label">Machine Learning</span><span class="status-led__tag">PCA + SVM lineal</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">07</span><span class="status-led__label">Caracterización RF</span><span class="status-led__tag">Path-loss vs. distancia/pared</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">08</span><span class="status-led__label">Integración</span><span class="status-led__tag">MQTT / Home Assistant (opcional)</span></li>
+          <li class="status-led"><span class="led" aria-hidden="true"></span><span class="status-led__num">09</span><span class="status-led__label">Documentación final</span><span class="status-led__tag">Informe técnico completo</span></li>
+        </ol>
+      </div>
+      <ul class="stat-inline" aria-label="Datos rápidos">
+        <li><strong>0€*</strong> coste adicional</li>
+        <li><strong>2×</strong> ESP32-WROOM</li>
+        <li><strong>MIT</strong> licencia</li>
+      </ul>
+      <p class="stat-strip__note">* Sujeto a confirmación de si el hardware ya está en mano — ver <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md#hardware" target="_blank" rel="noopener">README → Hardware</a>.</p>
+    </section>
+
+    <!-- ============ LÍMITES Y ÉTICA — merged, split layout ============ -->
+    <section class="section section--split" id="honestidad" aria-labelledby="honestidad-title">
+      <div class="split__col">
+        <p class="section-eyebrow">Límites</p>
+        <h2 id="honestidad-title" class="section-title">Lo que esto no hace (todavía)</h2>
+        <ul class="limits-list">
+          <li>No identifica personas: solo presencia/movimiento binario. Decisión de alcance incremental, no exclusión permanente (ver §Ética).</li>
+          <li>No generaliza entre habitaciones sin recalibrar.</li>
+          <li>Consume batería continuamente, no apto para nodos de bajo consumo sin trabajo adicional.</li>
+          <li>Modo A (router existente) sigue sin validar: pregunta abierta, no asunción.</li>
+        </ul>
+      </div>
+      <div class="split__col">
+        <p class="section-eyebrow">Ética</p>
+        <h2 class="section-title">Cómo se investiga esto</h2>
+        <ul class="ethics-list">
+          <li><strong>Consentimiento por sesión</strong>, exigido por la propia herramienta de captura, no solo por escrito.</li>
+          <li><strong>Códigos anónimos</strong> (<code>P01</code>), nunca nombres reales en ningún dataset.</li>
+          <li><strong>Sin despliegue fuera del laboratorio.</strong> Ningún modelo aquí está pensado para identificar o seguir a nadie.</li>
+          <li><strong>Extensiones a identificación individual</strong> exigen su propia decisión documentada antes de empezar; el permiso no es implícito.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ RECURSOS — compact, no filler sections ============ -->
+    <section class="section" id="recursos" aria-labelledby="recursos-title">
+      <p class="section-eyebrow">Seguir explorando</p>
+      <h2 id="recursos-title" class="section-title">Documentación completa</h2>
+      <div class="doc-links">
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/README.md" target="_blank" rel="noopener">
+          <span class="doc-link__title">README.md</span><span class="doc-link__desc">Documentación principal</span>
+        </a>
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/firmware/README.md" target="_blank" rel="noopener">
+          <span class="doc-link__title">firmware/README.md</span><span class="doc-link__desc">Guía de flasheo de esp-csi</span>
+        </a>
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/acquisition_protocol.md" target="_blank" rel="noopener">
+          <span class="doc-link__title">acquisition_protocol.md</span><span class="doc-link__desc">Formato de sesión y metadatos</span>
+        </a>
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/docs/hardware_configuration.md" target="_blank" rel="noopener">
+          <span class="doc-link__title">hardware_configuration.md</span><span class="doc-link__desc">Configuración y checklist</span>
+        </a>
+        <a class="doc-link" href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/tools/README.md" target="_blank" rel="noopener">
+          <span class="doc-link__title">tools/README.md</span><span class="doc-link__desc">Captura y validación</span>
+        </a>
+      </div>
+      <p class="cite-note">
+        ¿Citando este trabajo? No es una publicación formal: cita por commit o fecha, ya que los resultados
+        cambiarán en cuanto existan datos reales. Formato sugerido en el propio README.
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<a href="#top" class="back-to-top" id="backToTop" aria-label="Volver arriba">↑</a>
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <p>MIT License · <a href="https://github.com/AlvGJ-UGR/wifi-csi-presence-sensing/blob/main/LICENSE" target="_blank" rel="noopener">ver LICENSE</a></p>
+    <p>Repositorio principal del portfolio: <a href="https://github.com/AlvGJ-UGR/Telecom-portfolio" target="_blank" rel="noopener">Telecom-portfolio</a></p>
+    <p>GitHub: <a href="https://github.com/AlvGJ-UGR" target="_blank" rel="noopener">@AlvGJ-UGR</a> · Contacto: <a href="mailto:alvarogj1@correo.ugr.es">alvarogj1@correo.ugr.es</a></p>
+  </div>
+</footer>
+
+<script defer src="assets/js/main.js"></script>
+</body>
+</html>
