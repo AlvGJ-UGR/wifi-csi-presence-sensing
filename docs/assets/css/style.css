@@ -5,24 +5,24 @@
    ========================================================================== */
 
 :root {
-  --bg: #EDEEE8;
-  --panel: #E3E4DB;
-  --panel-border: #C7C8BC;
-  --text: #23282B;
-  --text-dim: #545E58;
-  --text-faint: #5E655F;
+  --bg: #0A0D10;
+  --panel: #10141A;
+  --panel-border: #1E252C;
+  --text: #E7E9EC;
+  --text-dim: #9AA3AC;
+  --text-faint: #7C8892;
 
-  --amber: #7C5714;
-  --amber-dim: #C9AE7A;
-  --cyan: #2B6B63;
-  --alert: #A6512E;
+  --amber: #E0A857;
+  --amber-dim: #6B5326;
+  --cyan: #4FC3E8;
+  --alert: #E0715C;
 
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Work Sans', system-ui, sans-serif;
-  --font-mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-  --radius: 3px;
-  --max-width: 920px;
+  --radius: 4px;
+  --max-width: 960px;
 }
 
 * { box-sizing: border-box; }
@@ -36,20 +36,20 @@ body {
   margin: 0;
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 900px 500px at 20% -10%, rgba(169,121,31,0.08), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(43,107,99,0.07), transparent 55%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
-  background-repeat: no-repeat, no-repeat, repeat;
+    radial-gradient(ellipse 1200px 700px at 50% -10%, rgba(79,195,232,0.05), transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 30%, rgba(224,168,87,0.035), transparent 55%);
+  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 .skip-link {
   position: absolute; left: -999px; top: 0;
-  background: var(--amber); color: #F5F2E8; padding: 8px 14px; z-index: 200;
+  background: var(--amber); color: #0A0D10; padding: 8px 14px; z-index: 200;
 }
 .skip-link:focus { left: 8px; top: 8px; }
 
@@ -59,7 +59,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline
 
 code {
   font-family: var(--font-mono);
-  background: rgba(169, 121, 31, 0.12);
+  background: rgba(224, 168, 87, 0.12);
   color: var(--amber);
   padding: 0.1em 0.4em;
   border-radius: 2px;
@@ -71,7 +71,7 @@ code {
 /* ============ TOPBAR ============ */
 .topbar {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(237, 238, 232, 0.86);
+  background: rgba(10, 13, 16, 0.82);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--panel-border);
 }
@@ -107,7 +107,30 @@ code {
 }
 
 /* ============ HERO ============ */
-.hero { padding: 80px 24px 56px; text-align: center; max-width: 720px; margin: 0 auto; perspective: 800px; }
+.hero { padding: 80px 24px 56px; text-align: center; max-width: 720px; margin: 0 auto; perspective: 800px; position: relative; }
+
+.hero__wave-bg {
+  position: absolute; inset: -40px -200px auto -200px; width: calc(100% + 400px); height: 420px;
+  z-index: -1; opacity: 0.55; pointer-events: none;
+}
+.ping-ring { fill: none; stroke: var(--cyan); stroke-width: 1.2; transform-origin: center; animation: ping-out 3.6s ease-out infinite; }
+.wifi-ping--alt .ping-ring { stroke: var(--amber); }
+.ping-ring--1 { animation-delay: 0s; }
+.ping-ring--2 { animation-delay: 1.2s; }
+.ping-ring--3 { animation-delay: 2.4s; }
+@keyframes ping-out {
+  0%   { r: 4; opacity: 0.85; }
+  100% { r: 60; opacity: 0; }
+}
+.txrx-line { stroke: var(--panel-border); stroke-width: 1; stroke-dasharray: 3 5; }
+.txrx-packet { filter: drop-shadow(0 0 3px var(--cyan)); }
+@media (prefers-reduced-motion: reduce) {
+  .ping-ring { animation: none; opacity: 0; }
+  .txrx-packet { display: none; }
+}
+@media (max-width: 720px) {
+  .hero__wave-bg { display: none; }
+}
 .eyebrow {
   font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--amber); margin: 0 0 18px;
@@ -206,6 +229,9 @@ code {
 .eq-block .katex-display { margin: 0; }
 .multipath-svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 8px auto 4px; }
 .multipath-caption { font-size: 0.8rem; color: var(--text-faint); text-align: center; margin: 0 0 18px; }
+.signal-pulse { animation: signal-opacity 2s ease-in-out infinite; }
+@keyframes signal-opacity { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .signal-pulse { animation: none; opacity: 0.9; } }
 
 /* ============ FIGURE (OFDM channel response chart) ============ */
 .figure-panel { margin: 24px 0; }
@@ -235,7 +261,15 @@ tr:last-child td { border-bottom: none; }
 .dsp-stage__idx { font-size: 0.68rem; color: var(--text-faint); }
 .dsp-stage__label { font-size: 0.82rem; color: var(--cyan); }
 .dsp-stage__sub { font-size: 0.68rem; color: var(--text-faint); }
-.dsp-arrow { color: var(--amber); font-size: 1rem; flex-shrink: 0; }
+.dsp-arrow { color: var(--amber); font-size: 1rem; flex-shrink: 0; animation: flow-pulse 2.4s ease-in-out infinite; }
+.dsp-arrow:nth-of-type(1) { animation-delay: 0s; }
+.dsp-arrow:nth-of-type(2) { animation-delay: 0.3s; }
+.dsp-arrow:nth-of-type(3) { animation-delay: 0.6s; }
+.dsp-arrow:nth-of-type(4) { animation-delay: 0.9s; }
+.dsp-arrow:nth-of-type(5) { animation-delay: 1.2s; }
+.dsp-arrow:nth-of-type(6) { animation-delay: 1.5s; }
+@keyframes flow-pulse { 0%, 60%, 100% { opacity: 0.45; } 30% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .dsp-arrow { animation: none; opacity: 0.8; } }
 @media (max-width: 720px) {
   .dsp-pipeline { flex-direction: column; align-items: stretch; }
   .dsp-arrow { transform: rotate(90deg); align-self: center; }
