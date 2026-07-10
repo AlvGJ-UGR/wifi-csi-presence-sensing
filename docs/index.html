@@ -117,7 +117,7 @@
         <line x1="18" y1="57" x2="102" y2="57" stroke="var(--text-faint)" stroke-width="1.5"/>
         <path d="M 18 57 L 60 14 L 102 57" fill="none" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/>
         <path d="M 18 57 L 46 100 L 102 57" fill="none" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/>
-        <path d="M 18 60 L 66 92 L 102 60" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 2"/>
+        <path d="M 18 60 L 66 92 L 102 60" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 2" class="travel-dash"/>
         <circle cx="66" cy="92" r="3.5" fill="var(--amber)"/>
       </svg>
       <p class="intuition__caption"><strong>El aire ya está lleno de WiFi.</strong> La señal llega por varias trayectorias reflejadas, la haya pedido alguien o no.</p>
@@ -132,8 +132,8 @@
         </g>
         <ellipse cx="60" cy="60" rx="48" ry="20" fill="none" stroke="var(--cyan)" stroke-width="1.5"/>
         <circle cx="70" cy="46" r="7" fill="var(--bg)" stroke="var(--text)" stroke-width="2"/>
-        <path d="M 12 60 Q 40 30 62 40" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
-        <path d="M 78 40 Q 95 32 108 60" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+        <path d="M 12 60 Q 40 30 62 40" fill="none" stroke="var(--amber)" stroke-width="1.8" class="signal-pulse"/>
+        <path d="M 78 40 Q 95 32 108 60" fill="none" stroke="var(--amber)" stroke-width="1.8" class="signal-pulse"/>
         <path d="M 20 72 Q 45 88 70 78 Q 90 70 100 76" fill="none" stroke="var(--amber)" stroke-width="1.2" opacity="0.5"/>
       </svg>
       <p class="intuition__caption"><strong>Tu cuerpo la dobla.</strong> Un obstáculo dentro de la zona de Fresnel cambia la fase y amplitud de forma medible.</p>
@@ -149,10 +149,10 @@
           <circle cx="84" cy="84" r="4"/><circle cx="36" cy="84" r="4"/>
         </g>
         <g fill="var(--amber)">
-          <circle cx="86" cy="33" r="1.6"/><circle cx="81" cy="39" r="1.6"/><circle cx="88" cy="40" r="1.6"/>
-          <circle cx="33" cy="34" r="1.6"/><circle cx="39" cy="38" r="1.6"/><circle cx="32" cy="40" r="1.6"/>
-          <circle cx="87" cy="87" r="1.6"/><circle cx="81" cy="82" r="1.6"/><circle cx="88" cy="80" r="1.6"/>
-          <circle cx="33" cy="86" r="1.6"/><circle cx="39" cy="81" r="1.6"/><circle cx="34" cy="79" r="1.6"/>
+          <circle cx="86" cy="33" r="1.6" class="jitter-dot jitter-dot--a"/><circle cx="81" cy="39" r="1.6" class="jitter-dot jitter-dot--b"/><circle cx="88" cy="40" r="1.6" class="jitter-dot jitter-dot--c"/>
+          <circle cx="33" cy="34" r="1.6" class="jitter-dot jitter-dot--b"/><circle cx="39" cy="38" r="1.6" class="jitter-dot jitter-dot--a"/><circle cx="32" cy="40" r="1.6" class="jitter-dot jitter-dot--c"/>
+          <circle cx="87" cy="87" r="1.6" class="jitter-dot jitter-dot--c"/><circle cx="81" cy="82" r="1.6" class="jitter-dot jitter-dot--a"/><circle cx="88" cy="80" r="1.6" class="jitter-dot jitter-dot--b"/>
+          <circle cx="33" cy="86" r="1.6" class="jitter-dot jitter-dot--a"/><circle cx="39" cy="81" r="1.6" class="jitter-dot jitter-dot--c"/><circle cx="34" cy="79" r="1.6" class="jitter-dot jitter-dot--b"/>
         </g>
       </svg>
       <p class="intuition__caption"><strong>Un ESP32 de 3€ lo mide.</strong> El chip expone el CSI en crudo: el jitter de fase alrededor de cada símbolo ya delata el canal cambiando.</p>
@@ -285,6 +285,7 @@
                 fill="none" stroke="var(--cyan)" stroke-width="2"/>
               <circle cx="414.3" cy="162.7" r="4" fill="var(--amber)"/>
               <text x="422" y="150" fill="var(--amber)" font-size="9" font-family="monospace">nulo multitrayecto</text>
+              <line x1="46" y1="14" x2="46" y2="190" class="ofdm-sweep" stroke="var(--cyan)" stroke-width="1.5"/>
             </svg>
             <p class="figure-panel__caption">|H<sub>k</sub>| simulado — 64 subportadoras, 802.11n.</p>
           </div>
