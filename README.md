@@ -185,7 +185,6 @@ wifi-csi-presence-sensing/
 
 ## Limitaciones y consideraciones honestas
 
-- **El alcance inicial (Fases 0–9, ver `.ai/MASTER_PLAN.md`) se centra en presencia/movimiento binario, no en identificación de personas** — esto es una decisión de alcance incremental (empezar por el problema más simple y añadir complejidad después, ver ADR-003 en `.ai/DECISIONS.md`), no una exclusión permanente por motivos de privacidad. Explorar firmas CSI individuales (identificación/re-identificación) está documentado como extensión futura, fuera de las fases 0–9, en `MASTER_PLAN.md` — y permanece dentro del alcance de investigación de este proyecto, no descartado. Ver "Ética y consentimiento" más abajo para las condiciones bajo las que se llevaría a cabo.
 - **Requiere recalibración por entorno**: un modelo entrenado en una habitación no se espera que generalice directamente a otra sin reajuste — se documentará explícitamente si esto ocurre en la fase de evaluación, en vez de asumir que no.
 - **Consumo energético**: la captura continua de CSI requiere el radio WiFi activo permanentemente, a diferencia de sensores PIR que duermen la mayor parte del tiempo — no es apta para nodos de batería de larga duración sin trabajo adicional de gestión de energía.
 - **Multi-persona**: distinguir cuántas personas hay (no solo si hay alguna) es sustancialmente más difícil y se deja fuera del alcance inicial (posible extensión futura).
