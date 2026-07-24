@@ -54,6 +54,19 @@ to record anonymised participant codes (e.g. `P01`); never pass real names.
 Only pass `--participant-consent` once consent has actually been obtained
 for that specific session — not preemptively "just in case."
 
+### Other optional flags
+
+Not shown in the example above, but available:
+
+- `--baud` — serial baud rate (default `115200`)
+- `--ap-placement` / `--sta-placement` — free-text placement notes for each
+  board (height, orientation), stored in `metadata.json`
+- `--notes` — a short free-text note, written into the session's `notes.md`
+
+Run `python tools/capture_session.py --help` for the authoritative, current
+list — this README is kept in sync manually and could lag behind the
+script if a flag is added without updating both.
+
 ### Important caveat — raw format is provisional
 
 `docs/acquisition_protocol.md` specifies the intended `csi_raw.csv` schema
@@ -79,8 +92,17 @@ visualisation belong in `analysis/`, once it exists.
 
 Structural validator: checks a `data/raw/<session_id>/` folder against the
 schema in `docs/acquisition_protocol.md` and the ADR-010 consent
-requirements. It does **not** touch CSI signal content — only file
-presence, `metadata.json` field validity, and consent-field consistency.
+requirements — file presence, `metadata.json` field validity,
+consent-field consistency, and (since 2026-07, confirmed against real
+capture) per-line shape of `csi_raw.csv`'s `CSI_DATA` rows: field count
+and a syntactically clean trailing array. It does **not** interpret the
+CSI signal *values* themselves (amplitude/phase content) — only whether
+each line has the shape a real `CSI_DATA` line should have. A session with
+more than 15% shape-corrupted lines fails; below that it's a warning (real
+captures at 921600 baud have shown occasional corruption from UART
+overrun — see `docs/acquisition_protocol.md`, "Known issue"). Corrupted
+lines are reported and should be dropped by the analysis loader, never
+guessed at or repaired.
 
 ### Run against a real session
 
