@@ -3,44 +3,13 @@
 capture_session.py — Host-side capture helper for raw CSI acquisition sessions.
 
 This script does NOT process or analyse CSI. It only:
-  1. Opens a serial connection to the ESP32 that is streaming CSI frames
-     (per firmware/README.md).
-  2. Tags each incoming line with a host-side reception timestamp.
+  1. Opens a serial connection to the ESP32 that is streaming CSI frames.
+  2. Tags each incoming line with a host-side reception timestamp (microsecond precision).
   3. Writes the raw lines, untouched, to csi_raw.csv inside a correctly
      named session folder under data/raw/, per docs/acquisition_protocol.md.
-  4. Writes metadata.json with the session parameters you provide on the
-     command line.
+  4. Writes metadata.json with the session parameters provided on the command line.
 
-It does not parse, filter, decode, or interpret the CSI payload itself —
-that exact format depends on the esp-csi build/example used, which is not
-yet finalised (see the "Known open question" note in firmware/README.md).
-Treat the host_recv_time_us column as a diagnostic cross-check (packet
-rate, gaps), not as a substitute for whatever timestamp the firmware
-itself emits inside the line.
-
-Usage example:
-
-    python tools/capture_session.py \\
-        --mode modoB \\
-        --label presente_estatico \\
-        --distance 2.0 \\
-        --port /dev/ttyUSB0 \\
-        --channel 6 \\
-        --environment "salon, sin obstaculos" \\
-        --wall-type none \\
-        --num-people 1 \\
-        --participant-consent \\
-        --participant-id P01
-
-Sessions with --num-people > 0 REQUIRE --participant-consent (per ADR-010
-in .ai/DECISIONS.md) — the script refuses to run otherwise. Only pass this
-flag once informed consent has actually been obtained from every
-participant for this specific session, not preemptively.
-
-Press Ctrl+C to stop the capture. The script then finalises metadata.json
-with the actual start/end timestamps and line count.
-
-Requires: pyserial (`pip install pyserial`)
+Press Ctrl+C or supply --duration N to stop the capture.
 """
 
 import argparse
@@ -69,10 +38,11 @@ def parse_args():
         description="Capture a raw CSI session to data/raw/, per docs/acquisition_protocol.md."
     )
     p.add_argument("--port", required=True, help="Serial port of the CSI-receiving ESP32, e.g. /dev/ttyUSB0 or COM5")
-    p.add_argument("--baud", type=int, default=115200, help="Serial baud rate (default: 115200)")
+    p.add_argument("--baud", type=int, default=921600, help="Serial baud rate (default: 921600)")
     p.add_argument("--mode", required=True, choices=sorted(VALID_MODES))
     p.add_argument("--label", required=True, choices=sorted(VALID_LABELS))
-    p.add_argument("--distance", required=True, type=float, help="Distance in metres between the two ESP32s (or ESP32 and router)")
+    p.add_argument("--distance", required=True, type=float, help="Distance in metres between the two ESP32s")
+    p.add_argument("--duration", type=float, default=None, help="Optional capture duration in seconds. Stops automatically when reached.")
     p.add_argument("--channel", type=int, default=None, help="WiFi channel in use (unknown if omitted)")
     p.add_argument("--environment", default=None, help="Free-text room/obstacle description")
     p.add_argument("--wall-type", choices=sorted(VALID_WALL_TYPES), default="unknown")
@@ -100,29 +70,34 @@ def build_session_id(now, mode, label, distance):
     return f"{ts}_{mode}_{label}_{distance_str}m"
 
 
+def validate_ethics_and_args(args):
+    """Verifica reglas de negocio y consentimiento (ADR-010) antes de tocar I/O."""
+    if args.num_people and args.num_people > 0 and not args.participant_consent:
+        print(
+            "ERROR: --num-people > 0 but --participant-consent was not passed.\n"
+            "Per ADR-010, no session involving people may be captured without an\n"
+            "explicit, per-session confirmation that informed consent was obtained.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if args.duration is not None and args.duration <= 0:
+        print("ERROR: --duration must be a positive number of seconds.", file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     args = parse_args()
+    validate_ethics_and_args(args)
 
     now = datetime.now(timezone.utc)
     session_id = build_session_id(now, args.mode, args.label, args.distance)
     session_dir = RAW_DIR / session_id
 
-    if args.num_people and args.num_people > 0 and not args.participant_consent:
-        print(
-            "ERROR: --num-people > 0 but --participant-consent was not passed.\n"
-            "Per ADR-010, no session involving people may be captured without an\n"
-            "explicit, per-session confirmation that informed consent was obtained.\n"
-            "Re-run with --participant-consent once consent has actually been obtained\n"
-            "(don't pass this flag preemptively before asking).",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
     if session_dir.exists():
         print(f"ERROR: session directory already exists: {session_dir}", file=sys.stderr)
         sys.exit(1)
 
-    session_dir.mkdir(parents=True)
+    session_dir.mkdir(parents=True, exist_ok=False)
     csv_path = session_dir / "csi_raw.csv"
     meta_path = session_dir / "metadata.json"
     notes_path = session_dir / "notes.md"
@@ -132,7 +107,16 @@ def main():
     print(f"Opening {args.port} @ {args.baud} baud...")
 
     try:
-        ser = serial.Serial(args.port, args.baud, timeout=1)
+        ser = serial.Serial(args.port, args.baud, timeout=0.5)
+        
+        # Expandir buffer RX del driver del SO a 64 KB
+        try:
+            ser.set_buffer_size(rx_size=65536)
+        except (AttributeError, serial.SerialException):
+            pass
+
+        ser.reset_input_buffer()
+
     except serial.SerialException as e:
         print(f"ERROR: could not open serial port: {e}", file=sys.stderr)
         session_dir.rmdir()
@@ -140,29 +124,47 @@ def main():
 
     frame_count = 0
     start_time = datetime.now(timezone.utc)
+    start_monotonic = time.monotonic()
 
-    print("Capturing... press Ctrl+C to stop.")
+    if args.duration:
+        print(f"Capturing for {args.duration} seconds (or press Ctrl+C to stop)...")
+    else:
+        print("Capturing... press Ctrl+C to stop.")
 
     try:
-        with open(csv_path, "w", encoding="utf-8", newline="") as f:
+        with open(csv_path, "w", encoding="utf-8", newline="", buffering=65536) as f:
             f.write("# host_recv_time_us,raw_serial_line\n")
             f.write("# raw_serial_line is written EXACTLY as emitted by the firmware -- not parsed.\n")
-            f.write("# See docs/acquisition_protocol.md for the intended csi_raw.csv schema and\n")
-            f.write("# firmware/README.md 'Known open question' for the current format caveat.\n")
+            f.write("# See docs/acquisition_protocol.md for the intended csi_raw.csv schema.\n")
+            
             while True:
-                line = ser.readline()
+                # Comprobar límite de duración si está configurado
+                if args.duration and (time.monotonic() - start_monotonic) >= args.duration:
+                    print(f"\nTarget duration of {args.duration}s reached.")
+                    break
+
+                try:
+                    line = ser.readline()
+                except serial.SerialException as e:
+                    print(f"\nWARNING: Serial communication interrupted: {e}", file=sys.stderr)
+                    break
+
                 if not line:
                     continue
-                host_recv_time_us = int(time.time() * 1_000_000)
-                try:
-                    decoded = line.decode("utf-8", errors="replace").rstrip("\r\n")
-                except Exception:
-                    decoded = repr(line)
+
+                host_recv_time_us = time.time_ns() // 1000
+                decoded = line.decode("utf-8", errors="replace").rstrip("\r\n")
                 f.write(f"{host_recv_time_us},{decoded}\n")
-                f.flush()
+                
                 frame_count += 1
                 if frame_count % 100 == 0:
-                    print(f"  {frame_count} lines captured...")
+                    f.flush()
+                    elapsed = time.monotonic() - start_monotonic
+                    if args.duration:
+                        print(f"  {frame_count} lines captured ({elapsed:.1f}s / {args.duration:g}s)...", end="\r", flush=True)
+                    else:
+                        print(f"  {frame_count} lines captured ({elapsed:.1f}s)...", end="\r", flush=True)
+
     except KeyboardInterrupt:
         print("\nStopped by user.")
     finally:
@@ -170,11 +172,13 @@ def main():
 
     end_time = datetime.now(timezone.utc)
 
+    # Generación de Metadatos
     metadata = {
         "session_id": session_id,
         "mode": args.mode,
         "label": args.label,
         "distance_m": args.distance,
+        "target_duration_s": args.duration if args.duration is not None else "unlimited",
         "start_time_utc": start_time.isoformat(),
         "end_time_utc": end_time.isoformat(),
         "environment": args.environment or "unknown",
@@ -206,7 +210,6 @@ def main():
     duration_s = (end_time - start_time).total_seconds()
     print(f"\nDone. {frame_count} lines captured over {duration_s:.1f}s.")
     print(f"Session stored at: {session_dir}")
-    print("Remember to manually inspect csi_raw.csv for obvious corruption before trusting this session.")
 
 
 if __name__ == "__main__":
