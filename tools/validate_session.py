@@ -19,7 +19,9 @@ Exit code is 0 if every given session passes, 1 if any fails.
 """
 
 import argparse
+import csv
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -32,6 +34,20 @@ REQUIRED_METADATA_KEYS = {
 VALID_MODES = {"modoA", "modoB"}
 VALID_LABELS = {"ausente", "presente_estatico", "presente_movimiento"}
 VALID_WALL_TYPES = {"none", "tabique", "carga", "unknown"}
+
+# Confirmed against real esp-csi (csi_recv_router) output, 2026-07 -- see
+# docs/acquisition_protocol.md. 25 scalar/header fields (including the
+# leading literal "CSI_DATA") plus the trailing quoted array = 26 fields
+# once the capture_session.py host_recv_time_us prefix is included.
+CSI_HEADER_FIELDS = [
+    "type", "seq", "mac", "rssi", "rate", "sig_mode", "mcs", "bandwidth",
+    "smoothing", "not_sounding", "aggregation", "stbc", "fec_coding", "sgi",
+    "noise_floor", "ampdu_cnt", "channel", "secondary_channel",
+    "local_timestamp", "ant", "sig_len", "rx_state", "len", "first_word",
+]
+EXPECTED_FIELD_COUNT = 1 + len(CSI_HEADER_FIELDS) + 1  # host_recv_time_us + header + data
+CORRUPTION_WARN_THRESHOLD = 0.0   # any corrupted line at all -> warn
+CORRUPTION_ERROR_THRESHOLD = 0.15  # >15% corrupted -> error, session not trustworthy
 
 
 class ValidationResult:
@@ -124,17 +140,56 @@ def validate_metadata(session_dir, result):
     return meta
 
 
+_INT_ARRAY_RE = re.compile(r"^\[-?\d+(,-?\d+)*\]$")
+
+
+def check_csi_line(line):
+    """Return None if the line looks structurally intact, else a short
+    reason string. Only checks shape/field-count/array-syntax -- never
+    tries to guess or repair a value, per docs/acquisition_protocol.md."""
+    try:
+        fields = next(csv.reader([line]))
+    except Exception as e:
+        return f"unparsable as CSV ({e})"
+
+    if len(fields) != EXPECTED_FIELD_COUNT:
+        return f"expected {EXPECTED_FIELD_COUNT} fields, got {len(fields)}"
+
+    if fields[1] != "CSI_DATA":
+        return f"field[1] expected 'CSI_DATA', got {fields[1]!r}"
+
+    array_str = fields[-1].strip()
+    if not _INT_ARRAY_RE.match(array_str):
+        return "trailing data array is not a clean '[int,int,...]' list (likely a dropped comma or corrupted byte)"
+
+    return None
+
+
 def validate_csv(session_dir, result):
     csv_path = session_dir / "csi_raw.csv"
     if not csv_path.exists():
         return
     with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
         lines = f.readlines()
-    data_lines = [l for l in lines if l.strip() and not l.lstrip().startswith("#")]
+    data_lines = [l.rstrip("\n") for l in lines if l.strip() and not l.lstrip().startswith("#")]
     if not data_lines:
         result.error("csi_raw.csv contains no data lines (only comments/empty, or file is empty)")
+        return
     elif len(data_lines) < 10:
         result.warn(f"csi_raw.csv has only {len(data_lines)} data line(s) -- session may be too short to be useful")
+
+    corrupt = [(i, check_csi_line(l)) for i, l in enumerate(data_lines, start=1)]
+    corrupt = [(i, reason) for i, reason in corrupt if reason]
+    rate = len(corrupt) / len(data_lines)
+
+    if corrupt:
+        examples = ", ".join(f"line {i} ({reason})" for i, reason in corrupt[:3])
+        more = f" (+{len(corrupt) - 3} more)" if len(corrupt) > 3 else ""
+        msg = f"{len(corrupt)}/{len(data_lines)} lines ({rate:.1%}) fail the CSI_DATA shape check -- e.g. {examples}{more}"
+        if rate > CORRUPTION_ERROR_THRESHOLD:
+            result.error(msg + " -- corruption rate too high to trust this session, see docs/acquisition_protocol.md 'Known issue'")
+        else:
+            result.warn(msg + " -- likely UART overrun at high packet rate; corrupted lines should be dropped by the analysis loader, not repaired")
 
 
 def validate_session(session_dir):
