@@ -82,17 +82,47 @@ capture, before trusting the session — see `tools/README.md`.
 
 ## Raw CSV format (`csi_raw.csv`)
 
-One row per received CSI frame, in the order the firmware emits it. Exact
-column set depends on the `esp-csi` struct fields available at flash time,
-but at minimum:
+Each captured line, as written by `tools/capture_session.py`, is:
 
 ```
-timestamp_us,rssi,channel,csi_data
+host_recv_time_us,raw_serial_line
 ```
 
-Where `csi_data` is the raw amplitude/phase array as emitted by the
-firmware (do not pre-process, round, or filter — this file is immutable
-once written, per ADR-005).
+`raw_serial_line` is the firmware's own output verbatim (not parsed at
+capture time, per ADR-005). Confirmed against real capture (2026-07,
+`csi_recv_router` example, ESP-IDF v5.2), the firmware's own line format
+is the standard `esp-csi` CSV, 25 comma-separated fields followed by a
+quoted JSON-style array:
+
+```
+type,seq,mac,rssi,rate,sig_mode,mcs,bandwidth,smoothing,not_sounding,aggregation,stbc,fec_coding,sgi,noise_floor,ampdu_cnt,channel,secondary_channel,local_timestamp,ant,sig_len,rx_state,len,first_word,data
+```
+
+Example (real capture, trimmed for length):
+
+```
+1784806142593379,CSI_DATA,507430,84:aa:9c:26:48:57,-60,11,1,7,0,1,1,0,1,0,0,-95,08,0,100,1,128,1,"[100,-64,5,0,...]"
+```
+
+So a full row is `host_recv_time_us,` followed by these 25 fields (24
+scalar header fields + the trailing `data` array).
+
+### Known issue: occasional line corruption at 921600 baud
+
+Real captures at 921600 baud (the console baud rate the `csi_recv_router`
+example actually uses — confirmed by reading `idf.py monitor`'s own
+startup line, do not assume 115200) show occasional corrupted lines:
+missing commas producing concatenated numbers (e.g. `-7-8` instead of two
+separate values), missing values producing empty fields (double commas),
+and occasional wildly out-of-range spikes (e.g. `146` or `-123` where
+neighbouring values are within ±30). This is consistent with UART buffer
+pressure at a high CSI packet rate (~130-160 pkt/s observed) without
+hardware flow control, not a parsing artefact on the host side.
+
+Do not silently "fix" these lines by guessing the intended value. Treat
+any line that doesn't match the expected field count/array shape as
+corrupted and exclude it from analysis, counted and reported (see
+`tools/validate_session.py`), not repaired.
 
 ## Labelling discipline
 
