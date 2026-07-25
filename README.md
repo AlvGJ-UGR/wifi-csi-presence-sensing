@@ -764,160 +764,51 @@ python analysis/evaluate.py
 De este modo será posible ejecutar el pipeline completo de adquisición, procesamiento y evaluación de forma reproducible y con un único conjunto de herramientas.
 
 ---
-# 📂 Estructura del Repositorio
+## 📂 Estructura del Repositorio
 
-El proyecto sigue una estructura modular que separa claramente las distintas etapas del pipeline: adquisición, validación, procesamiento, almacenamiento de datos y visualización de resultados.
+El proyecto está organizado de forma modular para separar la adquisición de datos, la documentación, el procesamiento y los resultados experimentales. A medida que avance el desarrollo, esta estructura irá creciendo de forma incremental.
 
 ```text
 wifi-csi-presence-sensing/
-├── README.md
 ├── LICENSE
+├── README.md
 ├── requirements.txt
 │
-├── firmware/                  # Firmware ESP32 basado en esp-csi
-│   ├── main/
-│   ├── components/
-│   └── sdkconfig.defaults
-│
-├── tools/                     # Herramientas de adquisición y validación
-│   ├── capture_csi.py
-│   ├── validate_session.py
-│   └── tests/
-│
-├── analysis/                  # Procesamiento de señal y Machine Learning
-│   ├── preprocessing/
-│   ├── features/
-│   ├── models/
-│   ├── evaluation/
-│   └── notebooks/
+├── analysis/
+└── .gitkeep                    # Procesamiento de señal (en desarrollo)
 │
 ├── data/
-│   ├── raw/                   # Capturas originales
-│   ├── processed/             # Datos preprocesados
-│   ├── labeled/               # Dataset final etiquetado
-│   └── metadata/              # Información experimental
+│   ├── raw/                      # Capturas CSI originales
+│   └── labeled/                  # Datasets etiquetados
+│
+├── docs/
+│   ├── assets/                   # Recursos de la página web del proyecto
+│   ├── acquisition_protocol.md   # Protocolo de adquisición de datos
+│   ├── hardware_configuration.md # Configuración del hardware experimental
+│   └── index.html                # Página web del proyecto
+│
+├── firmware/
+│   └── README.md                 # Guía de adquisición basada en esp-csi
 │
 ├── results/
-│   ├── figures/
-│   ├── reports/
-│   ├── confusion_matrices/
-│   └── roc_curves/
+└── .gitkeep                      # Resultados experimentales (en desarrollo)
 │
-├── docs/                      # Documentación adicional
-│
-└── assets/
-    ├── images/
-    └── diagrams/
+└── tools/
+    ├── README.md                 # Documentación de las herramientas
+    ├── capture_session.py        # Captura y almacenamiento de sesiones CSI
+    └── validate_session.py       # Validación de integridad de las sesiones
 ```
 
----
+### Descripción de los directorios
 
-## 📁 Descripción de directorios
-
-### `firmware/`
-
-Contiene el firmware encargado de capturar la información CSI utilizando el ESP32.
-
-Sus responsabilidades incluyen:
-
-- Inicialización del hardware.
-- Configuración WiFi.
-- Recepción de paquetes IEEE 802.11.
-- Extracción de la CSI.
-- Envío de datos mediante UART.
-
----
-
-### `tools/`
-
-Agrupa todas las utilidades relacionadas con la adquisición y validación de datos.
-
-Actualmente incluye:
-
-| Script | Función |
-|:-------|:--------|
-| `capture_csi.py` | Captura las tramas enviadas por el ESP32 y las almacena en disco. |
-| `validate_session.py` | Comprueba la integridad y calidad de una sesión experimental. |
-| `tests/` | Pruebas unitarias de las herramientas del proyecto. |
-
----
-
-### `analysis/`
-
-Contiene el pipeline completo de procesamiento de señal.
-
-Entre sus futuras responsabilidades se encuentran:
-
-- Limpieza de datos.
-- Filtrado temporal.
-- Normalización.
-- Extracción de características.
-- PCA.
-- STFT.
-- Entrenamiento de modelos.
-- Evaluación del rendimiento.
-
-La separación en módulos permite modificar una etapa sin afectar al resto del sistema.
-
----
-
-### `data/`
-
-Almacena todas las capturas experimentales.
-
-La estructura distingue claramente entre:
-
-| Carpeta | Contenido |
-|:---------|:----------|
-| `raw/` | Capturas originales sin modificar. |
-| `processed/` | Datos limpiados y preparados para el análisis. |
-| `labeled/` | Dataset definitivo utilizado por los modelos. |
-| `metadata/` | Información de cada sesión experimental. |
-
-Esta organización garantiza la trazabilidad completa de los datos desde la adquisición hasta los resultados finales.
-
----
-
-### `results/`
-
-Recoge todas las salidas generadas durante la evaluación del sistema.
-
-Entre ellas:
-
-- Gráficas.
-- Espectrogramas.
-- Curvas ROC.
-- Matrices de confusión.
-- Informes experimentales.
-- Métricas de rendimiento.
-
-De esta forma es posible comparar fácilmente distintas versiones del algoritmo.
-
----
-
-### `docs/`
-
-Incluye documentación técnica complementaria que, por su extensión, no resulta apropiada para el README principal.
-
-Por ejemplo:
-
-- Protocolos experimentales.
-- Notas de desarrollo.
-- Diagramas detallados.
-- Referencias bibliográficas.
-
----
-
-### `assets/`
-
-Contiene los recursos gráficos utilizados por la documentación.
-
-Ejemplos:
-
-- Diagramas de arquitectura.
-- Capturas del dashboard.
-- Figuras empleadas en el README.
-- Iconos.
+| Directorio | Descripción |
+|:-----------|:------------|
+| **analysis/** | Contendrá el pipeline de procesamiento de señal, extracción de características y modelos de Machine Learning. Actualmente se encuentra en desarrollo. |
+| **data/** | Almacena tanto las capturas CSI originales (`raw/`) como los datasets etiquetados (`labeled/`). |
+| **docs/** | Documentación técnica del proyecto, protocolos experimentales y archivos de la página web. |
+| **firmware/** | Documentación relacionada con la adquisición CSI utilizando el framework oficial **esp-csi** de Espressif. Actualmente no existe un firmware propio. |
+| **results/** | Destinado a almacenar gráficas, métricas y resultados experimentales generados durante las distintas fases del proyecto. |
+| **tools/** | Scripts auxiliares para la captura y validación de sesiones CSI. |
 
 ---
 
